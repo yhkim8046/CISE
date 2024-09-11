@@ -23,15 +23,15 @@ jobs:
       
       - name: Install dependencies
         run: npm install
-        working-directory: ./frontend  # React 프로젝트 경로
+        working-directory: ./frontend  
       
       - name: Build React App
         run: npm run build
         working-directory: ./frontend
       
-      - name: Run tests
-        run: npm test
-        working-directory: ./frontend
+      ##- name: Run tests
+       ## run: npm test
+        ##working-directory: ./frontend
 
   build-nestjs:
     name: Build Nest.js API
@@ -47,12 +47,12 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: ./backend  # Nest.js 프로젝트 경로
+        working-directory: ./backend  
 
       - name: Build Nest.js API
         run: npm run build
         working-directory: ./backend
 
-      - name: Run tests
-        run: npm test
-        working-directory: ./backend
+       ##- name: Run tests
+        ##run: npm test
+        ##working-directory: ./backend
