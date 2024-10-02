@@ -1,22 +1,14 @@
-import { IoMdArrowDropdown } from "react-icons/io";
-import NavBar from "./nav/NavBar";
-import NavDropdown from "./nav/NavDropdown";
-import NavItem from "./nav/NavItem";
-const PopulatedNavBar = () => {
-return (
-<NavBar>
-<NavItem>SPEED</NavItem>
-<NavItem route="/" end>
-Home
-</NavItem>
-<NavItem dropdown route="/articles">
-Articles <IoMdArrowDropdown />
-<NavDropdown>
-<NavItem route="/articles">View articles</NavItem>
-<NavItem route="/articles/new">Submit new</NavItem>
-</NavDropdown>
-</NavItem>
-</NavBar>
-);
+// src/components/PopulatedNavBar.tsx
+import React from 'react';
+import NavBar from './nav/NavBar';
+import styles from './PopulatedNavBar.module.scss';
+
+const PopulatedNavBar: React.FC = () => {
+    return (
+        <div className={styles.navBar}>
+            <NavBar />
+        </div>
+    );
 };
+
 export default PopulatedNavBar;

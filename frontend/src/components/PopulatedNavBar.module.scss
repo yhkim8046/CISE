@@ -1,11 +1,44 @@
-.user_container {
-    position: absolute;
-    aspect-ratio: 1;
-    backdrop-filter: brightness(50%);
+// src/components/nav/Nav.module.scss
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #007bff; // or any color you prefer
+    color: white;
+}
+
+.navLeft {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 2em;
-    border-radius: 100%;
-    left: 1em
+}
+
+.navRight {
+    display: flex;
+    align-items: center;
+}
+
+.userSelect {
+    margin-left: 20px;
+    padding: 5px;
+    border: none;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+}
+
+.submitButton {
+    margin-left: 10px;
+    padding: 10px 20px;
+    background-color: white;
+    color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+
+    &:hover {
+        background-color: #0056b3; // dark blue for hover effect
+        color: white;
     }
+}

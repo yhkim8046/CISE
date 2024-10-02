@@ -1,53 +1,103 @@
+.mainContent {
+    margin-left: 0; /* Default state when the side panel is closed */
+    transition: margin-left 0.3s ease; /* Smooth transition when the panel opens */
+}
+
+.mainContentShifted {
+    margin-left: 250px; /* Adjust based on side panel width */
+}
+
 .navbar {
     display: flex;
-    position: relative;
-    top: 0;
-    flex-direction: row;
-    width: 100%;
-    background-color: darkblue;
+    justify-content: space-between;
     align-items: center;
-    color: aliceblue;
-    font-size: 1.5em;
-    font-weight: bold;
-    transition: top 0.5s;
-    height: fit-content;
-    }
-    .hide {
-    top: -3em;
-    }
-    .navitem {
-    position: relative;
-    padding: 1em;
-    width: auto;
+    padding: 10px 20px;
+    background-color: #007bff; /* Navbar color */
+    color: white;
+    height: 40px;
+}
+
+.navLeft {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    cursor: default;
-    white-space: nowrap;
-    }
-    .clickable {
-    @extend .navitem;
+}
+
+.navRight {
+    display: flex;
+    align-items: center;
+}
+
+.userSelectContainer {
+    position: relative; /* Make it relative to position the arrow */
+    display: flex;
+    align-items: center; /* Center the icon and dropdown vertically */
+}
+
+.userSelect {
+    padding: 5px 30px 5px 5px; /* Add right padding for the arrow space */
+    border: none;
+    background-color: transparent;
+    color: #ffffff;
+    text-align: left;
+    height: 30px; /* Set a height for better alignment */
+    appearance: none; /* Remove default arrow */
+    background: transparent; /* Set background to transparent */
+    background-image: url('../../images/dropdown.png'); /* Keep your path */
+    background-repeat: no-repeat; /* Prevent repeating the image */
+    background-position: right 10px center; /* Position the image to the right */
+    background-size: 12px; /* Adjust size of the image */
+    padding-right: 28px; /* Adjust padding-right to prevent text overlap with the arrow */
+}
+
+.userIcon {
+    width: 20px; /* Set width of the icon */
+    height: 20px; /* Set height of the icon */
+    margin-right: 4px; /* Space between icon and select */
+    margin-bottom: 2px;
+}
+
+.dropdownButton {
+    position: relative; /* Changed from 'left' to 'relative' */
+    right: 20px;
+    background: transparent; /* Make the background transparent */
+    background-image: url('../../images/menu.png'); /* Path to your menu image */
+    background-repeat: no-repeat; /* Prevent repeating the image */
+    background-size: 60px; /* Corrected size of the image */
+    width: 60px; /* Set width for the button */
+    height: 60px; /* Set height for the button */
+    cursor: pointer; /* Pointer cursor on hover */
+    border: none;
+}
+
+.navItemButton {
+    background: transparent;
+    border: none;
+    color: white;
     cursor: pointer;
-    }
-    .clickable:hover {
-    backdrop-filter: brightness(50%);
-    }
-    .dropdown_container {
-        visibility: hidden;
-        display: flex;
-        flex-direction: column;
-        background-color: darkblue;
-        position: absolute;
-        top: 100%;
-        right: 0;
-        }
-        .dropdown:hover {
-        cursor: pointer;
-        backdrop-filter: brightness(50%);
-        .dropdown_container {
-        visibility: visible;
-        }
-        }
-        .end {
-        margin-left: auto;
-        }    
+}
+
+.sidePanel {
+    position: fixed; /* Fix position to the left */
+    top: 20;
+    left: 0;
+    width: 60px; /* Adjust the width as needed */
+    height: 100%;
+    background-color: #035bb2; /* Dark background */
+    color: white;
+    z-index: 1000; /* Ensure it appears above other elements */
+    transition: transform 0.3s ease; /* Smooth transition */
+}
+
+.panelButton {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Full width button */
+    margin-top: 15px;
+    background-image: url('../../images/Queue.png');
+    background-repeat: no-repeat; /* Prevent repeating the image */
+    background-size: 40px; /* Corrected size of the image */
+    margin-left: 10px;
+    height: 50px;
+}
