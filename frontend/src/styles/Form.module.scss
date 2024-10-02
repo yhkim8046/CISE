@@ -1,26 +1,43 @@
+.formContainer {
+    padding-left: 2em;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 30em;
+    display: flex;
+    flex-direction: column; /* Add this line to stack children vertically */
+}
+
+.formTitle {
+    font-size: 2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center; /* Center the title */
+}
+
 .form {
-display: flex;
-flex-direction: column;
-max-width: 30em;
+    display: flex;
+    flex-direction: column; /* Keep this to stack form items vertically */
 }
+
 .formItem {
-padding: 1em;
-margin: 1em 0;
-flex-grow: 1;
+    padding: 15px;
+    margin: 1px; 
+    width: 100%; 
+    box-sizing: border-box;
 }
-.formTextArea {
-@extend .formItem;
-min-height: 8em;
-}
-.arrayItem {
-display: flex;
-flex-direction: row;
-align-items: center;
-justify-content: stretch;
-}
-.buttonItem {
-width: 3rem;
-height: 3rem;
-flex-grow: 0;
-font-size: 1.5em;
+
+.submitButton {
+    padding: 10px 20px;
+    background-color: rgb(0, 106, 255);
+    color: #ffffff;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    width: 100%;
+    height: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10%;
+    margin-top: 5%;
 }

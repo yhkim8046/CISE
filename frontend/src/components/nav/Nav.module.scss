@@ -88,16 +88,54 @@
     transition: transform 0.3s ease; /* Smooth transition */
 }
 
-.panelButton {
+.queueButton {
     background-color: transparent;
     color: white;
     border: none;
     cursor: pointer;
     width: 100%; /* Full width button */
     margin-top: 15px;
-    background-image: url('../../images/Queue.png');
+    background-image: url('../../images/queue.png');
     background-repeat: no-repeat; /* Prevent repeating the image */
     background-size: 40px; /* Corrected size of the image */
     margin-left: 10px;
     height: 50px;
+    position: relative; /* Position relative for the tooltip */
+}
+
+.homeButton {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Full width button */
+    margin-top: 15px;
+    background-image: url('../../images/home.png');
+    background-repeat: no-repeat; /* Prevent repeating the image */
+    background-size: 40px; /* Corrected size of the image */
+    margin-left: 10px;
+    height: 50px;
+    position: relative; /* Position relative for the tooltip */
+}
+
+.tooltip {
+    position: absolute; /* Position tooltip absolutely */
+    left: 100%; /* Position it to the right of the button */
+    top: 50%; /* Center it vertically relative to the button */
+    transform: translate(0, -50%); /* Offset to center vertically */
+    background-color: rgba(211, 211, 211, 0.8); /* Light grey with transparency */
+    color: black; /* Text color */
+    padding: 5px 10px; /* Padding around the text */
+    border-radius: 4px; /* Rounded corners */
+    display: none; /* Hide by default */
+    white-space: nowrap; /* Prevent wrapping */
+    z-index: 1001; /* Ensure it's above other elements */
+}
+
+.homeButton:hover .tooltip {
+    display: block; /* Show on hover */
+}
+
+.queueButton:hover .tooltip {
+    display: block; /* Show on hover */
 }

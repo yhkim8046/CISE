@@ -1,0 +1,31 @@
+.sidePanel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 250px; /* Set the desired width */
+    background-color: white; /* Background color for the side panel */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5); /* Shadow for a slight 3D effect */
+    z-index: 1000; /* Ensure it stays above other content */
+    transition: transform 0.3s ease; /* Smooth transition for opening/closing */
+    transform: translateX(-100%); /* Initially hide the panel off-screen */
+}
+
+.sidePanel.open {
+    transform: translateX(0); /* Show the panel when open */
+}
+
+.togglePanelButton {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 20px 25px; /* Increased padding for larger size */
+    background-color: transparent;
+    font-size: 18px; /* Increased font size */
+    border: none;
+    cursor: pointer;
+    z-index: 2000; /* Ensure it's above other elements */
+    width: 40px; /* Set a larger width */
+    height: 40px; /* Set a larger height */
+    border-radius: 10px; /* Optional: Add some border-radius to make the button visually appealing */
+}

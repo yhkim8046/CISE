@@ -36,19 +36,3 @@
         color: white;
     }
 }
-
-/* Button to toggle the side panel */
-.togglePanelButton {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    padding: 20px 25px; /* Increased padding for larger size */
-    background-color: transparent;
-    font-size: 18px; /* Increased font size */
-    border: none;
-    cursor: pointer;
-    z-index: 2000; /* Ensure it's above other elements */
-    width: 40px; /* Set a larger width */
-    height: 40px; /* Set a larger height */
-    border-radius: 10px; /* Optional: Add some border-radius to make the button visually appealing */
-}
