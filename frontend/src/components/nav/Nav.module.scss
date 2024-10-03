@@ -88,21 +88,6 @@
     transition: transform 0.3s ease; /* Smooth transition */
 }
 
-.queueButton {
-    background-color: transparent;
-    color: white;
-    border: none;
-    cursor: pointer;
-    width: 100%; /* Full width button */
-    margin-top: 15px;
-    background-image: url('../../images/queue.png');
-    background-repeat: no-repeat; /* Prevent repeating the image */
-    background-size: 40px; /* Corrected size of the image */
-    margin-left: 10px;
-    height: 50px;
-    position: relative; /* Position relative for the tooltip */
-}
-
 .homeButton {
     background-color: transparent;
     color: white;
@@ -114,6 +99,66 @@
     background-repeat: no-repeat; /* Prevent repeating the image */
     background-size: 40px; /* Corrected size of the image */
     margin-left: 10px;
+    height: 50px;
+    position: relative; /* Position relative for the tooltip */
+}
+
+.submitButton {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Full width button */
+    margin-top: 15px;
+    background-image: url('../../images/submit.png');
+    background-repeat: no-repeat; /* Prevent repeating the image */
+    background-size: 40px; /* Corrected size of the image */
+    margin-left: 10px;
+    height: 50px;
+    position: relative; /* Position relative for the tooltip */
+}
+
+.queueButton {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Full width button */
+    margin-top: 15px;
+    background-image: url('../../images/list.png');
+    background-repeat: no-repeat; /* Prevent repeating the image */
+    background-size: 40px; /* Corrected size of the image */
+    margin-left: 10px;
+    height: 50px;
+    position: relative; /* Position relative for the tooltip */
+}
+
+.approvalListButton {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Full width button */
+    margin-top: 15px;
+    background-image: url('../../images/approval.png');
+    background-repeat: no-repeat; /* Prevent repeating the image */
+    background-size: 40px; /* Corrected size of the image */
+    margin-left: 10px;
+    height: 50px;
+    position: relative; /* Position relative for the tooltip */
+}
+
+.settingsButton {
+    background-color: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%; /* Full width button */
+    background-image: url('../../images/settings.png');
+    background-repeat: no-repeat; /* Prevent repeating the image */
+    background-size: 40px; /* Corrected size of the image */
+    margin-left: 10px;
+    top: 50%;
     height: 50px;
     position: relative; /* Position relative for the tooltip */
 }
@@ -136,6 +181,18 @@
     display: block; /* Show on hover */
 }
 
+.submitButton:hover .tooltip {
+    display: block; /* Show on hover */
+}
+
 .queueButton:hover .tooltip {
+    display: block; /* Show on hover */
+}
+
+.approvalListButton:hover .tooltip {
+    display: block; /* Show on hover */
+}
+
+.settingsButton:hover .tooltip {
     display: block; /* Show on hover */
 }

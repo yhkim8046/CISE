@@ -1,13 +1,12 @@
-// src/components/nav/NavBar.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import NavDropdown from './NavDropdown';
-import SidePanel from './SidePanel'; // Import your new SidePanel component
 import styles from './Nav.module.scss';
 import userIcon from '../../images/user.png'; // Import your icon
+import { useUserType } from '../../context/userType'; // Import your context
 
 const NavBar = () => {
-    const [selectedOption, setSelectedOption] = useState('normal_user');
+    const { userType, setUserType } = useUserType(); // Use the user type from context
 
     const options = [
         { value: 'admin_user', label: 'Admin' },
@@ -17,10 +16,8 @@ const NavBar = () => {
     ];
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedOption(event.target.value);
+        setUserType(event.target.value); // Update userType via context
     };
-
-
 
     return (
         <>
@@ -35,7 +32,7 @@ const NavBar = () => {
                         <Image src={userIcon} alt="User Icon" className={styles.userIcon} />
                         <select
                             className={styles.userSelect}
-                            value={selectedOption}
+                            value={userType} // Controlled by context
                             onChange={handleChange}
                         >
                             {options.map(option => (
