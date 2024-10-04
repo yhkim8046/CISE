@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ArticleService } from '../services/articleService';
 import { CreateArticleDto } from '../dto/createArticle.dto';
+import { UpdateStatusDto } from '../dto/UpdateStatus.dto';
 import { error } from 'console';
 
 @Controller('api/articles')
@@ -109,5 +110,26 @@ export class ArticleController{
       );
     }
   }
+
+  //Approving Article by Moderator/SREC
+  @Put('approving/:id')
+   async approvingArticle(
+     @Param('id') id: string,
+     @Body() updateStatusDto: UpdateStatusDto,
+   ) {
+     try {
+       await this.articleService.approvingArticle(id, updateStatusDto);
+       return { message: 'Article updated successfully' };
+     } catch {
+       throw new HttpException(
+         {
+           status: HttpStatus.BAD_REQUEST,
+           error: 'Unable to update this Article',
+         },
+         HttpStatus.BAD_REQUEST,
+         { cause: error },
+       );
+     }
+   }
   
 } 

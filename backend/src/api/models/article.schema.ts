@@ -21,11 +21,11 @@ export class Article {
   @Prop()
   volume: number; 
 
-  @Prop()
+  @Prop({ unique: true })
   doi: string;
 
-  @Prop()
-  approvedSe: boolean;
+  @Prop({type: String, enum: ["submitted","approved","rejected","displayable","undisplayable"], default: "submmited"})
+  status: string;
 
   @Prop({ required: true })
   submittedDate: Date;
@@ -33,8 +33,17 @@ export class Article {
   @Prop({ required: true })
   approvedDate: Date;
 
-  @Prop({ min: 1, max: 5 })
+  @Prop({ min: 0, max: 5 })
   rating: number;
+
+  @Prop()
+  ratingCounter: number;
+
+  @Prop()
+  totalRating: number;
+
+  @Prop()
+  averageRating: number;
 
   @Prop()
   journelConferenceName: string;
