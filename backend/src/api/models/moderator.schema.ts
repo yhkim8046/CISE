@@ -7,10 +7,10 @@ export type ModeratorDocument = HydratedDocument<Moderator>;
 export class Moderator {
     
     @Prop({require:true})
-    email: String;
+    email: string;
 
     @Prop({required:true})
-    password: String;
+    password: string;
 
     @Prop({ type: String, enum: ['moderator', 'SREC'],required:true})
     typeOfUser: string;

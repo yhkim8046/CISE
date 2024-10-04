@@ -58,21 +58,27 @@ export class ArticleController{
    }
    // Create/add an article
    @Post('/')
-   async addArticle(@Body() createArticleDto: CreateArticleDto) {
-     try {
-       await this.articleService.create(createArticleDto);
-       return { message: 'Article added successfully' };
-     } catch {
-       throw new HttpException(
-         {
-           status: HttpStatus.BAD_REQUEST,
-           error: 'Unable to add this article',
-         },
-         HttpStatus.BAD_REQUEST,
-         { cause: error },
-       );
-     }
-   }
+async addArticle(@Body() createArticleDto: CreateArticleDto) {
+  try {
+    await this.articleService.create(createArticleDto);
+    return { message: 'Article added successfully' };
+  } catch (err) {
+    // error log
+    console.error('Error occurred while adding article:', err);
+
+    // Message delivering 
+    throw new HttpException(
+      {
+        status: HttpStatus.BAD_REQUEST,
+        error: 'Unable to add this article',
+        message: err.message,  
+        stack: err.stack,      
+      },
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+}
+
  
    // Update a article
    @Put('/:id')
