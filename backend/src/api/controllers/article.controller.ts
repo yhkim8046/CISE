@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ArticleService } from '../services/articleService';
 import { CreateArticleDto } from '../dto/createArticle.dto';
@@ -57,8 +58,8 @@ export class ArticleController{
      }
    }
    // Create/add an article
-   @Post('/')
-async addArticle(@Body() createArticleDto: CreateArticleDto) {
+  @Post('/')
+  async addArticle(@Body() createArticleDto: CreateArticleDto) {
   try {
     await this.articleService.create(createArticleDto);
     return { message: 'Article added successfully' };
@@ -117,25 +118,91 @@ async addArticle(@Body() createArticleDto: CreateArticleDto) {
     }
   }
 
-  //Approving Article by Moderator/SREC
-  @Put('approving/:id')
-   async approvingArticle(
-     @Param('id') id: string,
-     @Body() updateStatusDto: UpdateStatusDto,
-   ) {
-     try {
-       await this.articleService.approvingArticle(id, updateStatusDto);
-       return { message: 'Article updated successfully' };
-     } catch {
-       throw new HttpException(
-         {
-           status: HttpStatus.BAD_REQUEST,
-           error: 'Unable to update this Article',
-         },
-         HttpStatus.BAD_REQUEST,
-         { cause: error },
-       );
-     }
-   }
+  // Approving Article by Moderator/SREC
+  @Put('/approving/:id')
+  async approvingArticle(
+    @Param('id') id: string,
+    @Query('moderatorId') moderatorId: string, 
+    @Body() updateStatusDto: UpdateStatusDto,
+  ) {
+    try {
+      await this.articleService.approvingArticle(id, moderatorId, updateStatusDto);
+      return { message: 'Article updated successfully' };
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Unable to update this Article',
+        },
+        HttpStatus.BAD_REQUEST,
+        { cause: error },
+      );
+    }
+  }
+
+  @Get('/submittedArticles')
+  async getSubmittedArciles(){
+    try{
+      return this.articleService.getApprovingRequestedArticles();
+    }catch {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'No articles found',
+        },
+        HttpStatus.NOT_FOUND,
+        { cause: error },
+      );
+    }
+  }
+
+  @Get('/rejected')
+  async getRejectedArcticles(){
+    try{
+      return this.articleService.getRejectedArticles();
+    }catch{
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'No articles found',
+        },
+        HttpStatus.NOT_FOUND,
+        { cause: error },
+      );
+    }
+  }
+
+  @Get('/approved')
+  async getApprovedArcticles(){
+    try{
+      return this.articleService.getDisplayingRequestedArticles();
+    }catch{
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: "No articles found",
+        },
+        HttpStatus.NOT_FOUND,
+        {cause: error},
+      );
+    }
+  }
+
+  @Get('/passedArticles')
+  async displayingArticles(){
+    try{
+      return this.articleService.getDisplayableArticles();
+    }catch{
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "No articles Found",
+      },
+      HttpStatus.NOT_FOUND,
+      {cause:error},
+    );
+    }
+  }
+
+  
   
 } 

@@ -1,14 +1,18 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { Article } from "../models/article.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { CreateArticleDto } from "../dto/createArticle.dto";
 import { UpdateStatusDto } from "../dto/UpdateStatus.dto";
 import { RatingArticleDto } from "../dto/ratingArticle.dto";
+import { Moderator } from "../models/moderator.schema";
 
 @Injectable()
 export class ArticleService {
-  constructor(@InjectModel(Article.name) private articleModel: Model<Article>) {}
+  constructor(
+    @InjectModel(Article.name) private articleModel: Model<Article>,
+    @InjectModel(Moderator.name) private moderatorModel: Model<Moderator>,
+  ) {}
 
   test(): string {
     return 'Article route testing';
@@ -35,18 +39,36 @@ export class ArticleService {
     return deletedArticle;
   }
 
-  //it can be used for the moderator and SREC
-  async approvingArticle(id: string, updateStatusDto: UpdateStatusDto){
+  //can be used for rejecting an article
+  async approvingArticle(
+    articleId: string,
+    moderatorId: string,
+    updateStatusDto: UpdateStatusDto
+  ): Promise<Article> {
+    const moderator = await this.moderatorModel.findById(moderatorId).exec();
+  
+    if (!moderator) {
+      throw new NotFoundException('Moderator not found');
+    }
+    
+    if (moderator.typeOfUser !== 'moderator') {
+      throw new ForbiddenException('Only moderators can approve articles');
+    }
+
     return await this.articleModel.findByIdAndUpdate(
-      id,
-      { $set: { status: updateStatusDto.status }}, 
+      articleId,
+      { $set: { status: updateStatusDto.status }},
       { new: true }
     ).exec();
-  } 
+  }
   
   //Finding articles need to be pass to SREC by the moderator
   async getApprovingRequestedArticles() {
     return await this.articleModel.find({ status: "submitted" }).exec();
+  }
+
+  async getDisplayableArticles(){
+    return await this.articleModel.find({status:"displayable"})
   }
   
   //Finding articles requested to be displaying
