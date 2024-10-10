@@ -1,28 +1,17 @@
-import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
+// moderator.controller.ts
+import { Controller, Post, Body, Param } from '@nestjs/common';
 import { ModeratorService } from '../services/ModeratorService';
-import { RegisterDto } from '../dto/Register.dto';
+import { Moderator } from '../models/moderator.schema';
+import { ArticleService } from '../services/articleService';
 
-@Controller('auth')
-export class AuthController {
+@Controller('api/moderators')
+export class ModeratorController {
   constructor(private readonly moderatorService: ModeratorService) {}
 
-  @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    try {
-      const user = await this.moderatorService.register(registerDto);
-      return { message: 'Registration successful', user };
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+  @Post('/')
+  async createModerator(@Body() body: { typeOfUser: 'moderator' | 'SREC' }): Promise<Moderator> {
+    console.log('Received body:', body); 
+    return this.moderatorService.createModerator(body.typeOfUser);
   }
 
-  @Post('login')
-  async login(@Body() body: { email: string; password: string }) {
-    try {
-      const user = await this.moderatorService.login(body.email, body.password);
-      return { message: 'Login successful', user };
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
-  }
 }
