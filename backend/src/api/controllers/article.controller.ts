@@ -203,6 +203,38 @@ export class ArticleController{
     }
   }
 
-  
+  // Get articles within a specific year range
+  @Get('/year-range')
+  async findArticlesByYearRange(
+    @Query('startYear') startYear: string,
+    @Query('endYear') endYear: string,
+  ) {
+    // Validate startYear and endYear to ensure they are numbers and within a reasonable range
+    const start = parseInt(startYear, 10);
+    const end = parseInt(endYear, 10);
+
+    if (isNaN(start) || isNaN(end) || start > end || start < 1900 || end > new Date().getFullYear()) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Invalid year range. Ensure both startYear and endYear are valid numbers, with startYear <= endYear, and within a valid range.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      return await this.articleService.findArticlesByYearRange(start, end);
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Error retrieving articles within the specified year range',
+          message: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
   
 } 

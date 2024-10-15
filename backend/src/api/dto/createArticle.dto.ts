@@ -45,7 +45,7 @@ export class CreateArticleDto {
   @IsOptional()
   typeOfResearch: string;
 
-  @IsString()
+  @IsString() 
   @IsOptional()
   typeOfParticipant: string;
 }
