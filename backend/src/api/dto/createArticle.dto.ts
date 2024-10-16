@@ -1,4 +1,11 @@
-import { IsString, IsNumber, IsOptional, IsNotEmpty, IsPositive, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsNotEmpty,
+  IsPositive,
+  IsUrl,
+} from 'class-validator';
 
 export class CreateArticleDto {
   @IsString()
@@ -21,7 +28,7 @@ export class CreateArticleDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  pages: number; 
+  pages: number;
 
   @IsNumber()
   @IsPositive()
@@ -45,7 +52,7 @@ export class CreateArticleDto {
   @IsOptional()
   typeOfResearch: string;
 
-  @IsString() 
+  @IsString()
   @IsOptional()
   typeOfParticipant: string;
 }

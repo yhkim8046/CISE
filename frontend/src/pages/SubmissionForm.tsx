@@ -1,5 +1,5 @@
 import React, { useState } from 'react'; 
-import { useForm, FieldError } from "react-hook-form";
+import { useForm, FieldError, SubmitHandler } from "react-hook-form";
 import styles from '../styles/Form.module.scss';
 import SidePanel from '../components/nav/SidePanel'; 
 import sidePanelStyles from '../styles/sidepanel.module.scss'; 
@@ -18,16 +18,29 @@ interface Article {
     typeOfParticipant?: string;
 }
 
+interface FormValues {
+    title: string;
+    authors: string;
+    source: string;
+    yearOfPublication: number;
+    pages?: number;
+    volume?: number;
+    doi: string;
+    claim: string;
+    evidence: string;
+    typeOfResearch?: string;
+    typeOfParticipant?: string;
+}
+
 const SubmissionForm: React.FC = () => {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>();
     const [isSidePanelOpen, setSidePanelOpen] = useState(false); 
     const [submitted, setSubmitted] = useState(false);  // Track form submission
 
-    const handleFormSubmit = (data: any) => {
-        // Check for errors before proceeding
+    const handleFormSubmit: SubmitHandler<FormValues> = (data) => {
         if (Object.keys(errors).length > 0) {
-            Object.values(errors).forEach(error => {
-                alert(error.message); // Display error message as a popup
+            Object.values(errors).forEach((error) => {
+                if (error) alert((error as FieldError).message); // Display error message as a popup
             });
             return; // Stop the form submission if there are errors
         }
@@ -75,6 +88,7 @@ const SubmissionForm: React.FC = () => {
                         placeholder="Title" 
                         className={styles.inputField} 
                     />
+                    {errors.title && <p>{errors.title.message}</p>}
                 </div>
 
                 <div className={styles.formItem}>
@@ -83,6 +97,7 @@ const SubmissionForm: React.FC = () => {
                         placeholder="Authors" 
                         className={styles.inputField} 
                     />
+                    {errors.authors && <p>{errors.authors.message}</p>}
                 </div>
 
                 <div className={styles.formItem}>
@@ -91,6 +106,7 @@ const SubmissionForm: React.FC = () => {
                         placeholder="Source" 
                         className={styles.inputField} 
                     />
+                    {errors.source && <p>{errors.source.message}</p>}
                 </div>
 
                 <div className={styles.formItem}>
@@ -104,6 +120,7 @@ const SubmissionForm: React.FC = () => {
                         placeholder="Year of Publication" 
                         className={styles.inputField} 
                     />
+                    {errors.yearOfPublication && <p>{errors.yearOfPublication.message}</p>}
                 </div>
 
                 {/* Optional fields */}
@@ -120,6 +137,7 @@ const SubmissionForm: React.FC = () => {
                         placeholder="DOI" 
                         className={styles.inputField} 
                     />
+                    {errors.doi && <p>{errors.doi.message}</p>}
                 </div>
 
                 <div className={styles.formItem}>
@@ -128,6 +146,7 @@ const SubmissionForm: React.FC = () => {
                         placeholder="Claim" 
                         className={styles.inputField} 
                     />
+                    {errors.claim && <p>{errors.claim.message}</p>}
                 </div>
 
                 <div className={styles.formItem}>
@@ -136,6 +155,7 @@ const SubmissionForm: React.FC = () => {
                         placeholder="Evidence" 
                         className={styles.inputField} 
                     />
+                    {errors.evidence && <p>{errors.evidence.message}</p>}
                 </div>
 
                 <div className={styles.formItem}>

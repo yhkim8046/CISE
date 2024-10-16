@@ -1,16 +1,14 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ArticleModule } from './api/module/artiecle.module';
+import { ArticleModule } from './api/module/article.module';
 import { ModeratorModule } from './api/module/Moderator.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.DB_URI || '', {
-      dbName: 'test', 
+      dbName: 'test',
     }),
     ArticleModule,
     ModeratorModule,
