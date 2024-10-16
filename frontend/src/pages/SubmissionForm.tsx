@@ -1,61 +1,155 @@
-import React, { useState } from 'react';
-import { useForm } from "react-hook-form";
-import formStyles from '../styles/Form.module.scss'; // Import the form styles with a different name
-import sidePanelStyles from '../styles/sidepanel.module.scss'; // Import the side panel styles
-import SidePanel from '../components/nav/SidePanel';
+import React, { useState } from 'react'; 
+import { useForm, FieldError } from "react-hook-form";
+import styles from '../styles/Form.module.scss';
+import SidePanel from '../components/nav/SidePanel'; 
+import sidePanelStyles from '../styles/sidepanel.module.scss'; 
 
-export default function SubmissionForm() {
-    const [isSidePanelOpen, setSidePanelOpen] = useState(false); // Side panel state
-    const { register, handleSubmit } = useForm(); // Move the useForm hook out of the data state
+interface Article {
+    title: string;
+    authors: string;
+    source: string;
+    yearOfPublication: number;
+    pages?: number;
+    volume?: number;
+    doi?: string;
+    claim: string;
+    evidence: string;
+    typeOfResearch?: string;
+    typeOfParticipant?: string;
+}
 
-    const onSubmit = (data: any) => {
-        console.log(JSON.stringify(data)); // You can replace this with submission logic
+const SubmissionForm: React.FC = () => {
+    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const [isSidePanelOpen, setSidePanelOpen] = useState(false); 
+    const [submitted, setSubmitted] = useState(false);  // Track form submission
+
+    const handleFormSubmit = (data: any) => {
+        // Check for errors before proceeding
+        if (Object.keys(errors).length > 0) {
+            Object.values(errors).forEach(error => {
+                alert(error.message); // Display error message as a popup
+            });
+            return; // Stop the form submission if there are errors
+        }
+
+        const newArticle: Article = {
+            title: data.title,
+            authors: data.authors,
+            source: data.source,
+            yearOfPublication: data.yearOfPublication,
+            pages: data.pages,
+            volume: data.volume,
+            doi: data.doi,
+            claim: data.claim,
+            evidence: data.evidence,
+            typeOfResearch: data.typeOfResearch,
+            typeOfParticipant: data.typeOfParticipant,
+        };
+
+        const existingArticles = JSON.parse(localStorage.getItem('articles') || '[]');
+        existingArticles.push(newArticle);
+        localStorage.setItem('articles', JSON.stringify(existingArticles));
+        reset();
+        setSubmitted(true); // Set confirmation after submission
     };
 
     const toggleSidePanel = () => {
-        setSidePanelOpen(!isSidePanelOpen); // Function to toggle side panel
+        setSidePanelOpen(!isSidePanelOpen);
     };
 
     return (
-        <div className={formStyles.formContainer}>
-            {/* Side Panel */}
+        <div className={styles.formContainer}>
             {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} />}
+            <button onClick={toggleSidePanel} className={sidePanelStyles.togglePanelButton}></button>
+            
+            <h1 className={styles.formTitle}>Submit an Article</h1>
 
-            {/* Add the title for the form */}
-            <h1 className={formStyles.formTitle}>Article Submission Form</h1>
+            {/* Show a confirmation message when the form is successfully submitted */}
+            {submitted && <p className={styles.confirmationMessage}>Article submitted successfully!</p>}
 
-            <form onSubmit={handleSubmit(onSubmit)} className={formStyles.form}>
-                <p>
-                    <input {...register("title")} placeholder="Title" className={formStyles.formItem} />
-                </p>
-                <p>
-                    <input {...register("author")} placeholder="Author" className={formStyles.formItem} />
-                </p>
-                <p>
-                    <input {...register("journal")} placeholder="Journal Name" className={formStyles.formItem} />
-                </p>
-                <p>
-                    <input {...register("year")} placeholder="Year" className={formStyles.formItem} />
-                </p>
-                <p>
-                    <input {...register("volume")} placeholder="Volume" className={formStyles.formItem} />
-                </p>
-                <p>
-                    <input {...register("number")} placeholder="Number" className={formStyles.formItem} />
-                </p>
-                <p>
-                    <input {...register("pages")} placeholder="Pages" className={formStyles.formItem} />
-                </p>
-                <p>
-                    <input {...register("doi")} placeholder="DOI" className={formStyles.formItem} />
-                </p>
-                <input type="submit" value="Submit" className={formStyles.submitButton} />
+            <form className={styles.form} onSubmit={handleSubmit(handleFormSubmit)}>
+
+                <div className={styles.formItem}>
+                    <input 
+                        {...register("title", { required: "Title is required" })} 
+                        placeholder="Title" 
+                        className={styles.inputField} 
+                    />
+                </div>
+
+                <div className={styles.formItem}>
+                    <input 
+                        {...register("authors", { required: "Authors are required" })} 
+                        placeholder="Authors" 
+                        className={styles.inputField} 
+                    />
+                </div>
+
+                <div className={styles.formItem}>
+                    <input 
+                        {...register("source", { required: "Source is required" })} 
+                        placeholder="Source" 
+                        className={styles.inputField} 
+                    />
+                </div>
+
+                <div className={styles.formItem}>
+                    <input 
+                        {...register("yearOfPublication", { 
+                            required: "Year of Publication is required", 
+                            min: { value: 1900, message: "Year must be after 1900" },
+                            max: { value: new Date().getFullYear(), message: "Year must not be in the future" }
+                        })} 
+                        type="number" 
+                        placeholder="Year of Publication" 
+                        className={styles.inputField} 
+                    />
+                </div>
+
+                {/* Optional fields */}
+                <div className={styles.formItem}>
+                    <input {...register("pages")} type="number" placeholder="Pages (optional)" className={styles.inputField} />
+                </div>
+                <div className={styles.formItem}>
+                    <input {...register("volume")} type="number" placeholder="Volume (optional)" className={styles.inputField} />
+                </div>
+                
+                <div className={styles.formItem}>
+                    <input 
+                        {...register("doi", { required: "DOI is required" })} 
+                        placeholder="DOI" 
+                        className={styles.inputField} 
+                    />
+                </div>
+
+                <div className={styles.formItem}>
+                    <input 
+                        {...register("claim", { required: "Claim is required" })} 
+                        placeholder="Claim" 
+                        className={styles.inputField} 
+                    />
+                </div>
+
+                <div className={styles.formItem}>
+                    <input 
+                        {...register("evidence", { required: "Evidence is required" })} 
+                        placeholder="Evidence" 
+                        className={styles.inputField} 
+                    />
+                </div>
+
+                <div className={styles.formItem}>
+                    <input {...register("typeOfResearch")} placeholder="Type of Research (optional)" className={styles.inputField} />
+                </div>
+
+                <div className={styles.formItem}>
+                    <input {...register("typeOfParticipant")} placeholder="Type of Participant (optional)" className={styles.inputField} />
+                </div>
+
+                <button type="submit" className={styles.submitButton}>Submit</button>
             </form>
-
-            {/* Button to toggle side panel */}
-            <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>
-                {isSidePanelOpen ? '' : ''}
-            </button>
         </div>
     );
-}
+};
+
+export default SubmissionForm;

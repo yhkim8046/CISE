@@ -6,3 +6,10 @@
     display: flex;
     flex-direction: column;
 }
+
+.contentWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center items horizontally */
+    width: 100%; /* Make sure it takes full width */
+}

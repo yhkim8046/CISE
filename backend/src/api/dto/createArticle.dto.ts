@@ -26,7 +26,7 @@ export class CreateArticleDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  volumn: number;
+  volume: number;
 
   @IsString()
   @IsOptional()

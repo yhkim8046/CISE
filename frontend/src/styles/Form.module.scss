@@ -26,6 +26,15 @@
     box-sizing: border-box;
 }
 
+.formItem input {
+    width: 100%;            /* Ensures the input takes the full width of the container */
+    height: 25px;          /* Adjust the height as needed */
+    padding: 10px;         /* Add padding for better spacing */
+    font-size: 16px;       /* Increase font size for better readability */
+    border: 1px solid #ccc;/* Optional: Add a border to inputs */
+    border-radius: 4px;    /* Optional: Add rounded corners */
+}
+
 .submitButton {
     padding: 10px 20px;
     background-color: rgb(0, 106, 255);

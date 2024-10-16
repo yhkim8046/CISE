@@ -104,3 +104,20 @@
         color: white;
     }
 }
+
+.columnSelection {
+    display: flex; /* Use flexbox to align items */
+    flex-wrap: wrap; /* Allow items to wrap to the next line */
+    gap: 15px; /* Space between the checkboxes */
+    padding: 10px; /* Add padding for better spacing */
+    background-color: #f9f9f9; /* Optional: background color to differentiate the section */
+    border: 1px solid #ddd; /* Optional: border for better visibility */
+    border-radius: 8px; /* Optional: rounded corners for aesthetics */
+    margin-bottom: 10px; /* Space above and below the selection area */
+}
+
+.columnSelection label {
+    display: flex; /* Align checkbox and label */
+    align-items: center; /* Center items vertically */
+    font-size: 14px; /* Font size for labels */
+}

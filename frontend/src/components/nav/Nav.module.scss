@@ -37,7 +37,7 @@
     padding: 5px 30px 5px 5px; /* Add right padding for the arrow space */
     border: none;
     background-color: transparent;
-    color: #ffffff;
+    color: #ffffff; /* Default text color */
     text-align: left;
     height: 30px; /* Set a height for better alignment */
     appearance: none; /* Remove default arrow */
@@ -48,6 +48,14 @@
     background-size: 12px; /* Adjust size of the image */
     padding-right: 28px; /* Adjust padding-right to prevent text overlap with the arrow */
 }
+
+/* Change text color to black when the dropdown is focused or selected */
+.userSelect:focus,
+.userSelect:active {
+    color: #000000; /* Change text color to black when focused or active */
+}
+
+
 
 .userIcon {
     width: 20px; /* Set width of the icon */

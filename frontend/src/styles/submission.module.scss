@@ -8,45 +8,33 @@
     align-items: center;
 }
 
-.actionButtons {
+.actionButtonsContainer {
     display: flex;
-    justify-content: flex-end; /* Align buttons to the right */
-    gap: 10px; /* Adds spacing between the buttons */
-}
-
-.approveButton,
-.rejectButton {
-    padding: 10px 20px;
-    background-color: rgb(255, 255, 255); /* Same as submit button */
-    color: #000000;
-    border: 1px solid black;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
-    width: 80px;
-    height: 30px;
-
-    &:hover {
-        background-color: #6e6e6e;
-        color: white;
-    }
+    justify-content: flex-end;
+    gap: 10px; /* Space between buttons */
 }
 
 .approveButton {
-    background-color: rgb(255, 255, 255); /* Approve button default color */
-
-    &:hover {
-        background-color: #00ff6e; /* Hover effect for Approve */
-    }
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
 }
 
 .rejectButton {
-    background-color: rgb(255, 255, 255); /* Different color for Reject button */
-
-    &:hover {
-        background-color: #ff5757; /* Hover effect for Reject */
-    }
+    background-color: #f44336; /* Red */
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
 }
+
+.statusContainer {
+    padding-right: 15px;
+    text-align: left;
+}
+
 
 .sendButton {
     margin-top: 80px;

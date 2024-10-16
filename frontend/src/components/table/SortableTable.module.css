@@ -1,0 +1,16 @@
+/* src/components/table/SortableTable.module.css */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 8px;
+    border: 1px solid #ddd; /* Example styling */
+}
+
+.table th {
+    background-color: rgb(0, 106, 255); /* Update header color to match the rest of your frontend */
+    color: rgb(255, 255, 255); /* Ensure text is visible against the blue background */
+    text-align: left; /* Example styling */
+}
