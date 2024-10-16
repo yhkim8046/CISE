@@ -6,6 +6,7 @@ import { CreateArticleDto } from "../dto/createArticle.dto";
 import { UpdateStatusDto } from "../dto/UpdateStatus.dto";
 import { RatingArticleDto } from "../dto/ratingArticle.dto";
 import { Moderator } from "../models/moderator.schema";
+import { ModeratorModule } from "../module/Moderator.module";
 
 @Injectable()
 export class ArticleService {
@@ -98,4 +99,11 @@ export class ArticleService {
 
     return { article, averageRating: article.averageRating };
   }
+
+  async findArticlesByYearRange(startYear: number, endYear: number): Promise<Article[]> {
+    return this.articleModel.find({
+      yearOfPublication: { $gte: startYear, $lte: endYear },
+    }).exec();
+  }
+  
 }

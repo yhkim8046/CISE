@@ -11,5 +11,6 @@ import { Moderator, ModeratorSchema } from '../models/moderator.schema';
   ],
   controllers: [ModeratorController],
   providers: [ModeratorService],
+  exports: [MongooseModule.forFeature([{ name: Moderator.name, schema: ModeratorSchema }])],
 })
 export class ModeratorModule {}

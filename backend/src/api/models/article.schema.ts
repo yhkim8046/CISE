@@ -24,13 +24,13 @@ export class Article {
   @Prop({ unique: true })
   doi: string;
 
-  @Prop({type: String, enum: ["submitted","approved","rejected","displayable","undisplayable"], default: "submmited"})
+  @Prop({type: String, enum: ["submitted","approved","rejected","displayable","undisplayable"], default: "submitted"})
   status: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, default: Date.now })
   submittedDate: Date;
   
-  @Prop({ required: true })
+  @Prop()
   approvedDate: Date;
 
   @Prop({ min: 0, max: 5 })
