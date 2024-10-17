@@ -7,11 +7,12 @@ import { Model } from 'mongoose';
 @Injectable()
 export class ModeratorService {
   constructor(
-    @InjectModel(Moderator.name) private moderatorModel: Model<ModeratorDocument>,
+    @InjectModel(Moderator.name)
+    private moderatorModel: Model<ModeratorDocument>,
   ) {}
 
   async createModerator(typeOfUser: 'moderator' | 'SREC'): Promise<Moderator> {
-    console.log('Creating Moderator with type:', typeOfUser); 
+    console.log('Creating Moderator with type:', typeOfUser);
     const newModerator = new this.moderatorModel({ typeOfUser });
     return newModerator.save();
   }

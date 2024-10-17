@@ -1,15 +1,60 @@
 .container {
-    padding-left: 2em;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 50em;
+    padding: 0 2em; /* Add padding to left and right */
+    margin: 0 auto; /* Center the container */
+    max-width: 50em; /* Set max width */
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Stack children vertically */
+    align-items: center; /* Center children horizontally */
 }
 
 .contentWrapper {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Stack items vertically */
     align-items: center; /* Center items horizontally */
-    width: 100%; /* Make sure it takes full width */
+    width: 100%; /* Ensure it takes full width */
+    padding: 1em 0; /* Adds some vertical padding */
+}
+
+.table {
+    width: 100%; /* Full width of the container */
+    max-width: 90%; /* Limit max width of the table */
+    margin: 0; /* Remove margin */
+    border-collapse: collapse; /* Better border handling */
+    table-layout: auto; /* Automatic column width adjustment */
+}
+
+.table th,
+.table td {
+    padding: 0.75em 1em; /* Padding for table cells */
+    border: 1px solid #ddd; /* Border for cells */
+    text-align: left; /* Align text to the left */
+    overflow: hidden; /* Prevent content overflow */
+    word-wrap: break-word; /* Break long words */
+}
+
+.evidenceColumn {
+    min-width: 400px; /* Minimum width for evidence column */
+}
+
+.evidenceTextBox {
+    width: 250px; /* Full width of the column */
+    height: 50px; /* Fixed height */
+    overflow-y: auto; /* Allow scrolling */
+    resize: none; /* Prevent resizing */
+    box-sizing: border-box; /* Include padding/border in calculations */
+}
+
+.submitButton {
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+    border: none; /* No border */
+    padding: 10px 15px; /* Padding */
+    cursor: pointer; /* Pointer cursor */
+    border-radius: 4px; /* Rounded corners */
+    margin-top: 0.5em; /* Space between button and textarea */
+    transition: background-color 0.3s; /* Smooth transition */
+}
+
+.submitButton:hover {
+    background-color: #45a049; /* Darker green on hover */
 }

@@ -50,3 +50,18 @@
     margin-bottom: 10%;
     margin-top: 5%;
 }
+
+.errorField {
+    border-color: red;
+}
+
+.errorMessage {
+    color: red;
+    font-size: 0.9em;
+}
+
+.confirmationMessage {
+    color: green;
+    font-weight: bold;
+}
+

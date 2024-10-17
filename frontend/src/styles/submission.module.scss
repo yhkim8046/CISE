@@ -1,3 +1,4 @@
+/* src/styles/submission.module.scss */
 .container {
     padding-left: 2em;
     margin-left: auto;
@@ -35,7 +36,6 @@
     text-align: left;
 }
 
-
 .sendButton {
     margin-top: 80px;
     padding: 10px 20px;
@@ -45,4 +45,12 @@
     cursor: pointer;
     border-radius: 5px;
     width: 40%;
+}
+
+.viewRejectedButton {
+    margin-top: 1rem;
+}
+
+.rejectedArticlesContainer {
+    margin-top: 2rem;
 }

@@ -1,4 +1,11 @@
-import { IsString, IsNumber, IsOptional, IsNotEmpty, IsPositive, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsNotEmpty,
+  IsPositive,
+  IsUrl,
+} from 'class-validator';
 
 export class CreateArticleDto {
   @IsString()
@@ -9,47 +16,45 @@ export class CreateArticleDto {
   @IsNotEmpty({ message: 'Authors are required' })
   authors: string;
 
-  @IsString()
-  @IsNotEmpty({ message: 'Source is required' })
-  source: string;
-
   @IsNumber()
   @IsPositive()
   @IsNotEmpty({ message: 'Year of publication is required' })
   yearOfPublication: number;
 
+  @IsOptional()
   @IsNumber()
   @IsPositive()
-  @IsOptional()
-  pages: number; 
+  pages?: number;
 
+  @IsOptional()
   @IsNumber()
   @IsPositive()
-  @IsOptional()
-  volume: number;
+  volume?: number;
 
-  @IsString()
   @IsOptional()
-  @IsUrl({}, { message: 'DOI must be a valid URL' })
-  doi: string;
+  @IsUrl({}, { message: 'Invalid DOI format' })
+  doi?: string;
 
   @IsString()
   @IsNotEmpty({ message: 'Claim is required' })
   claim: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Evidence is required' })
-  evidence: string;
+  @IsNotEmpty({ message: 'Type of research is required' })
+  typeOfResearch: string; // new field for type of research
 
   @IsString()
-  @IsOptional()
-  typeOfResearch: string;
+  @IsNotEmpty({ message: 'Type of participant is required' })
+  typeOfParticipant: string; // new field for type of participant
 
-  @IsString() 
   @IsOptional()
   typeOfParticipant: string;
   
   @IsString()
   @IsOptional()
   link: string;
+
+  @IsString()
+  reasonForRejection?: string; // new field for rejection reasons
+
 }

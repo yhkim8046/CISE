@@ -6,7 +6,6 @@ import { Article } from '../models/article.schema';
 import { Moderator } from '../models/moderator.schema';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateArticleDto } from '../dto/createArticle.dto';
-import { UpdateStatusDto } from '../dto/UpdateStatus.dto';
 import { RatingArticleDto } from '../dto/ratingArticle.dto';
 
 describe('ArticleService', () => {
@@ -39,7 +38,9 @@ describe('ArticleService', () => {
 
     service = module.get<ArticleService>(ArticleService);
     articleModel = module.get<Model<Article>>(getModelToken(Article.name));
-    moderatorModel = module.get<Model<Moderator>>(getModelToken(Moderator.name));
+    moderatorModel = module.get<Model<Moderator>>(
+      getModelToken(Moderator.name),
+    );
   });
 
   describe('findAll', () => {
@@ -66,8 +67,12 @@ describe('ArticleService', () => {
 
   describe('create', () => {
     it('should create a new article', async () => {
-      const createArticleDto: CreateArticleDto = { title: 'New Article' } as CreateArticleDto;
-      jest.spyOn(articleModel, 'create').mockResolvedValueOnce(createArticleDto as any);
+      const createArticleDto: CreateArticleDto = {
+        title: 'New Article',
+      } as CreateArticleDto;
+      jest
+        .spyOn(articleModel, 'create')
+        .mockResolvedValueOnce(createArticleDto as any);
 
       expect(await service.create(createArticleDto)).toEqual(createArticleDto);
     });
@@ -84,7 +89,11 @@ describe('ArticleService', () => {
         exec: jest.fn().mockResolvedValueOnce(updatedArticle),
       } as any);
 
-      const result = await service.approvingArticle('articleId', 'moderatorId', { status: 'approved' });
+      const result = await service.approvingArticle(
+        'articleId',
+        'moderatorId',
+        { status: 'approved' },
+      );
       expect(result).toEqual(updatedArticle);
     });
 
@@ -94,7 +103,9 @@ describe('ArticleService', () => {
       } as any);
 
       await expect(
-        service.approvingArticle('articleId', 'moderatorId', { status: 'approved' })
+        service.approvingArticle('articleId', 'moderatorId', {
+          status: 'approved',
+        }),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -105,7 +116,9 @@ describe('ArticleService', () => {
       } as any);
 
       await expect(
-        service.approvingArticle('articleId', 'moderatorId', { status: 'approved' })
+        service.approvingArticle('articleId', 'moderatorId', {
+          status: 'approved',
+        }),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -117,36 +130,38 @@ describe('ArticleService', () => {
         ratingCounter: 1,
         save: jest.fn().mockResolvedValue(true),
       } as any;
-      const ratingDto: RatingArticleDto = { 
-        rating: 4, 
-        ratingCounter: 0, 
-        totalRating: 0, 
-        averageRating: 0 
-      }; 
-  
+      const ratingDto: RatingArticleDto = {
+        rating: 4,
+        ratingCounter: 0,
+        totalRating: 0,
+        averageRating: 0,
+      };
+
       jest.spyOn(articleModel, 'findById').mockReturnValue({
         exec: jest.fn().mockResolvedValueOnce(article),
       } as any);
-  
+
       const result = await service.ratingArticle('articleId', ratingDto);
       expect(result.article.totalRating).toEqual(7);
       expect(result.article.ratingCounter).toEqual(2);
       expect(result.averageRating).toEqual(3.5);
     });
-  
+
     it('should throw an error if article is not found', async () => {
       jest.spyOn(articleModel, 'findById').mockReturnValue({
         exec: jest.fn().mockResolvedValueOnce(null),
       } as any);
-  
-      const ratingDto: RatingArticleDto = { 
-        rating: 4, 
-        ratingCounter: 0, 
-        totalRating: 0, 
-        averageRating: 0 
+
+      const ratingDto: RatingArticleDto = {
+        rating: 4,
+        ratingCounter: 0,
+        totalRating: 0,
+        averageRating: 0,
       };
-  
-      await expect(service.ratingArticle('invalidId', ratingDto)).rejects.toThrow('Article not found');
+
+      await expect(
+        service.ratingArticle('invalidId', ratingDto),
+      ).rejects.toThrow('Article not found');
     });
   });
 });

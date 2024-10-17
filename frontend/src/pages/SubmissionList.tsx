@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import SortableTable from '../components/table/SortableTable';
 import styles from '../styles/submission.module.scss';
-import SidePanel from '../components/nav/SidePanel';
+import SidePanel from '../components/nav/SidePanel'; 
 import sidePanelStyles from '../styles/sidepanel.module.scss';
-import { useRouter } from 'next/router';
 
 interface Article {
     id: string;
@@ -15,28 +14,33 @@ interface Article {
     volume?: number;
     doi?: string;
     claim: string;
-    evidence: string;
-    typeOfResearch?: string;
-    typeOfParticipant?: string;
     status?: 'Approved' | 'Rejected' | 'Pending';
 }
 
 const SubmissionList: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
     const [isSidePanelOpen, setSidePanelOpen] = useState(false);
-    const router = useRouter(); // Add useRouter for navigation
+    const [tempStatus, setTempStatus] = useState<{ [key: string]: 'Approved' | 'Rejected' | 'Pending' | undefined }>({});
 
     useEffect(() => {
-        const storedArticles: Article[] = JSON.parse(localStorage.getItem('articles') || '[]');
-        const articlesWithStatus = storedArticles.map(article => ({
-            ...article,
-            status: article.status || 'Pending',
-        }));
-        setArticles(articlesWithStatus);
+        fetchArticles(); // Call the function to fetch articles on component mount
     }, []);
 
+    const fetchArticles = async () => {
+        try {
+            const response = await fetch('/api/articles');
+            if (!response.ok) {
+                throw new Error('Failed to fetch articles');
+            }
+            const fetchedArticles: Article[] = await response.json();
+            setArticles(fetchedArticles);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+        }
+    };
+
     const toggleSidePanel = () => {
-        setSidePanelOpen(!isSidePanelOpen);
+        setSidePanelOpen(prevState => !prevState);
     };
 
     const headers = [
@@ -48,46 +52,39 @@ const SubmissionList: React.FC = () => {
         { key: 'volume', label: 'Volume' },
         { key: 'doi', label: 'DOI' },
         { key: 'claim', label: 'Claim' },
-        { key: 'evidence', label: 'Evidence' },
-        { key: 'typeOfResearch', label: 'Type of Research' },
-        { key: 'typeOfParticipant', label: 'Type of Participant' },
-        { key: 'status', label: 'Status' }
+        { key: 'status', label: 'Status' },
+        { key: 'actions', label: 'Actions' },
     ];
 
-    const handleStatusChange = (id: string, newStatus: 'Approved' | 'Rejected') => {
-        const updatedArticles = articles.map(article =>
-            article.id === id ? { ...article, status: newStatus } : article
-        );
-        setArticles(updatedArticles);
-        localStorage.setItem('articles', JSON.stringify(updatedArticles));
-    };
+    const handleStatusChange = useCallback((id: string, newStatus: 'Approved' | 'Rejected') => {
+        setTempStatus(prev => ({ ...prev, [id]: newStatus }));
+    }, []);
 
-    const modifiedArticles = articles.map(article => ({
-        ...article,
-        status: (
-            <div className={styles.statusContainer}>
-                <span>{article.status}</span>
-            </div>
-        ),
-        actions: (
-            <div className={styles.actionButtonsContainer}>
-                <button className={styles.approveButton} onClick={() => handleStatusChange(article.id, 'Approved')}>Approve</button>
-                <button className={styles.rejectButton} onClick={() => handleStatusChange(article.id, 'Rejected')}>Reject</button>
-            </div>
-        )
-    }));
+    const handleSubmit = async () => {
+        const updates = articles.map(article => ({
+            id: article.id,
+            status: tempStatus[article.id] || article.status,
+        })).filter(update => update.status);
 
-    const handleSubmitToAnalyst = () => {
-        const reviewedArticles = articles.filter(article => article.status === 'Approved' || article.status === 'Rejected');
-        const remainingArticles = articles.filter(article => article.status === 'Pending');
+        try {
+            const response = await fetch('/api/articles/batch-update', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updates),
+            });
 
-        setArticles(remainingArticles);
-        localStorage.setItem('articles', JSON.stringify(remainingArticles));
-        
-        // Optionally, you can store reviewed articles or directly navigate to the Approval List
-        // For example, you can use local storage or pass the data in router state
-        localStorage.setItem('reviewedArticles', JSON.stringify(reviewedArticles));
+            if (!response.ok) {
+                throw new Error('Failed to submit changes');
+            }
 
+            // Refetch articles to get the latest state
+            fetchArticles(); // Refetch articles after the update
+            setTempStatus({}); // Reset temporary status
+        } catch (error) {
+            console.error('Error submitting changes:', error);
+        }
     };
 
     return (
@@ -96,15 +93,33 @@ const SubmissionList: React.FC = () => {
             <button onClick={toggleSidePanel} className={sidePanelStyles.togglePanelButton}></button>
             <h1>Articles Submission Queue</h1>
             <SortableTable
-                headers={[
-                    ...headers,
-                    { key: 'actions', label: 'Actions' }
-                ]}
-                data={modifiedArticles}
+                headers={headers}
+                data={articles.map(article => ({
+                    ...article,
+                    status: (
+                        <div className={styles.statusContainer}>
+                            <span>{tempStatus[article.id] || article.status}</span>
+                        </div>
+                    ),
+                    actions: (
+                        <div className={styles.actionButtonsContainer}>
+                            <button
+                                className={styles.approveButton}
+                                onClick={() => handleStatusChange(article.id, 'Approved')}
+                            >
+                                Approve
+                            </button>
+                            <button
+                                className={styles.rejectButton}
+                                onClick={() => handleStatusChange(article.id, 'Rejected')}
+                            >
+                                Reject
+                            </button>
+                        </div>
+                    ),
+                }))}
             />
-            <button onClick={handleSubmitToAnalyst} className={styles.submitToAnalystButton}>
-                Submit to Analyst
-            </button>
+            <button onClick={handleSubmit} className={styles.sendButton}>Submit Changes</button>
         </div>
     );
 };

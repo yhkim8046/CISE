@@ -1,16 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { Document } from 'mongoose';
 
-export type ArticleDocument = HydratedDocument<Article>;
+export type ArticleDocument = Article & Document; // Extend Document
 
 @Schema()
 export class Article {
+  @Prop({ type: String }) // Explicitly define id
+  _id: string; // Custom type; normally, this is ObjectId unless specified otherwise.
 
   @Prop({ required: true })
   title: string;
 
   @Prop({ required: true })
-  author: string;  
+  author: string;
 
   @Prop()
   yearOfPublication: number;
@@ -19,12 +21,16 @@ export class Article {
   pages: number;
 
   @Prop()
-  volume: number; 
+  volume: number;
 
   @Prop({ unique: true })
   doi: string;
 
-  @Prop({type: String, enum: ["submitted","approved","rejected","displayable","undisplayable"], default: "submitted"})
+  @Prop({
+    type: String,
+    enum: ['submitted', 'approved', 'rejected'],
+    default: 'submitted',
+  })
   status: string;
 
   @Prop({ required: true, default: Date.now })
@@ -39,17 +45,17 @@ export class Article {
   @Prop({ min: 0, max: 5 })
   rating: number;
 
-  @Prop()
+  @Prop({ default: 0 }) // Default to 0 to prevent undefined behavior
   ratingCounter: number;
 
-  @Prop()
+  @Prop({ default: 0 }) // Default to 0 for clarity
   totalRating: number;
 
-  @Prop()
+  @Prop({ default: 0 }) // Default to 0 for clarity
   averageRating: number;
 
   @Prop()
-  journelConferenceName: string;
+  journalConferenceName: string;
 
   @Prop()
   claim: string;
@@ -65,6 +71,9 @@ export class Article {
 
   @Prop()
   link: string;
+
+  reasonForRejection?: string; // Make this optional for rejection reasons
+
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
