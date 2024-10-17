@@ -72,8 +72,8 @@ export class Article {
   @Prop()
   link: string;
 
+  @Prop()
   reasonForRejection?: string; // Make this optional for rejection reasons
-
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
