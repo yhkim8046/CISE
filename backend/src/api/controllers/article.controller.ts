@@ -44,20 +44,21 @@ export class ArticleController {
   // Create/add an article
   @Post('/')
   async addArticle(@Body() createArticleDto: CreateArticleDto) {
-    try {
-      await this.articleService.create(createArticleDto);
-      return { message: 'Article added successfully' };
-    } catch (err) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'Unable to add this article',
-          message: err.message,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+      try {
+          await this.articleService.create(createArticleDto);
+          return { message: 'Article added successfully' };
+      } catch (err) {
+          throw new HttpException(
+              {
+                  status: HttpStatus.BAD_REQUEST,
+                  error: 'Unable to add this article',
+                  message: err.message,
+              },
+              HttpStatus.BAD_REQUEST,
+          );
+      }
   }
+  
 
   // Update an article
   @Put('/:id')
@@ -135,8 +136,8 @@ export class ArticleController {
   }
 
   // Submit articles to analyst
-@Post('/submitToAnalyst')
-async submitToAnalyst(@Body() submitToAnalystDto: SubmitToAnalystDto) {
+  @Post('/submitToAnalyst')
+  async submitToAnalyst(@Body() submitToAnalystDto: SubmitToAnalystDto) {
     const articles = submitToAnalystDto.articles;
 
     // Separate approved and rejected articles
@@ -144,37 +145,33 @@ async submitToAnalyst(@Body() submitToAnalystDto: SubmitToAnalystDto) {
     const rejectedArticles = articles.filter(article => article.status === 'Rejected');
 
     try {
-        // Store rejected articles in the database with a reason
-        const rejectedResults = await Promise.all(rejectedArticles.map(async (article) => {
-            const reason = article.reasonForRejection || 'No reason provided';
-            // Only include properties that exist in the Article type
-            return this.articleService.storeRejectedArticles({
-                // Ensure the Article model has these properties defined
-                // If you're using Mongoose, _id should be used here instead of id
-                _id: article._id,
-                reasonForRejection: reason,
-                // Include other properties from the article as needed
-                ...article,
-            });
-        }));
+      // Store rejected articles in the database with a reason
+      const rejectedResults = await Promise.all(rejectedArticles.map(async (article) => {
+        const reason = article.reasonForRejection || 'No reason provided';
+        // Store rejected articles; ensure the Article model has these properties defined
+        return this.articleService.storeRejectedArticles({
+          _id: article._id,
+          reasonForRejection: reason,
+          ...article,
+        });
+      }));
 
-        // Store approved articles for display
-        await this.articleService.storeApprovedArticles(approvedArticles);
+      // Store approved articles for display
+      await this.articleService.storeApprovedArticles(approvedArticles);
 
-        return {
-            message: 'Articles processed successfully',
-            rejected: rejectedResults,
-        };
+      return {
+        message: 'Articles processed successfully',
+        rejected: rejectedResults,
+      };
     } catch (error) {
-        throw new HttpException(
-            {
-                status: HttpStatus.INTERNAL_SERVER_ERROR,
-                error: 'Failed to submit articles',
-                message: error.message,
-            },
-            HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Failed to submit articles',
+          message: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-}
-
+  }
 }

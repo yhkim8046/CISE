@@ -41,7 +41,7 @@ export class CreateArticleDto {
 
   @IsString()
   @IsNotEmpty({ message: 'Type of research is required' })
-  typeOfResearch: string; // new field for type of research
+  typeOfResearch: string; // updated for type of research
 
   @IsString()
   @IsNotEmpty({ message: 'Type of participant is required' })
@@ -53,5 +53,4 @@ export class CreateArticleDto {
 
   @IsString()
   reasonForRejection?: string; // new field for rejection reasons
-
 }

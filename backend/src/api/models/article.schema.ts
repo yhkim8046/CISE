@@ -1,18 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type ArticleDocument = Article & Document; // Extend Document
+export type ArticleDocument = Article & Document;
 
 @Schema()
 export class Article {
-  @Prop({ type: String }) // Explicitly define id
-  _id: string; // Custom type; normally, this is ObjectId unless specified otherwise.
+  // Consider letting Mongoose handle the _id field automatically
+  @Prop() // Remove custom id field unless necessary
+  _id: string; 
 
   @Prop({ required: true })
   title: string;
 
   @Prop({ required: true })
-  author: string;
+  authors: string[];
 
   @Prop()
   yearOfPublication: number;
@@ -28,8 +29,8 @@ export class Article {
 
   @Prop({
     type: String,
-    enum: ['submitted', 'approved', 'rejected'],
-    default: 'submitted',
+    enum: ['Pending', 'Submitted', 'Approved', 'Rejected'],
+    default: 'Pending',
   })
   status: string;
 
@@ -38,20 +39,20 @@ export class Article {
 
   @Prop()
   evidence: string;
-  
-  @Prop({default: Date.now})
+
+  @Prop() // Consider handling this in the service when an article is approved
   approvedDate: Date;
 
   @Prop({ min: 0, max: 5 })
   rating: number;
 
-  @Prop({ default: 0 }) // Default to 0 to prevent undefined behavior
+  @Prop({ default: 0 })
   ratingCounter: number;
 
-  @Prop({ default: 0 }) // Default to 0 for clarity
+  @Prop({ default: 0 })
   totalRating: number;
 
-  @Prop({ default: 0 }) // Default to 0 for clarity
+  @Prop({ default: 0 })
   averageRating: number;
 
   @Prop()
