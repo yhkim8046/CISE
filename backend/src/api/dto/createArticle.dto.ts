@@ -47,9 +47,6 @@ export class CreateArticleDto {
   @IsNotEmpty({ message: 'Type of participant is required' })
   typeOfParticipant: string; // new field for type of participant
 
-  @IsOptional()
-  typeOfParticipant: string;
-  
   @IsString()
   @IsOptional()
   link: string;
