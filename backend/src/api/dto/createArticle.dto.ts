@@ -48,4 +48,8 @@ export class CreateArticleDto {
   @IsString() 
   @IsOptional()
   typeOfParticipant: string;
+  
+  @IsString()
+  @IsOptional()
+  link: string;
 }

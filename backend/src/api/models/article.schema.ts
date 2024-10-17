@@ -29,8 +29,11 @@ export class Article {
 
   @Prop({ required: true, default: Date.now })
   submittedDate: Date;
-  
+
   @Prop()
+  evidence: string;
+  
+  @Prop({default: Date.now})
   approvedDate: Date;
 
   @Prop({ min: 0, max: 5 })
@@ -59,6 +62,9 @@ export class Article {
 
   @Prop({ type: String, enum: ['Student', 'Practitioner'] })
   typeOfParticipant: string;
+
+  @Prop()
+  link: string;
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);

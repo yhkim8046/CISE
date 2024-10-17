@@ -25,12 +25,11 @@ const SubmissionForm: React.FC = () => {
 
     const handleFormSubmit = (data: any) => {
         // Check for errors before proceeding
-        if (Object.keys(errors).length > 0) {
-            Object.values(errors).forEach(error => {
-                alert(error.message); // Display error message as a popup
-            });
-            return; // Stop the form submission if there are errors
-        }
+        Object.values(errors).forEach(error => {
+            if (error) {
+                alert((error as FieldError).message); 
+            }
+        });
 
         const newArticle: Article = {
             title: data.title,
