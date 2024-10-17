@@ -33,6 +33,7 @@ interface FormValues {
 const SubmissionForm: React.FC = () => {
     const { register, handleSubmit, reset } = useForm<FormValues>();
     const [isSidePanelOpen, setSidePanelOpen] = useState(false); 
+
     const [submitted, setSubmitted] = useState(false);  
 
     const handleFormSubmit: SubmitHandler<FormValues> = async (data) => {

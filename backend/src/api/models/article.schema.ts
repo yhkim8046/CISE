@@ -37,6 +37,9 @@ export class Article {
   submittedDate: Date;
 
   @Prop()
+  evidence: string;
+  
+  @Prop({default: Date.now})
   approvedDate: Date;
 
   @Prop({ min: 0, max: 5 })
@@ -67,7 +70,10 @@ export class Article {
   typeOfParticipant: string;
 
   @Prop()
+  link: string;
+
   reasonForRejection?: string; // Make this optional for rejection reasons
+
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);

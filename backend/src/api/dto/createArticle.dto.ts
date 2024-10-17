@@ -48,6 +48,13 @@ export class CreateArticleDto {
   typeOfParticipant: string; // new field for type of participant
 
   @IsOptional()
+  typeOfParticipant: string;
+  
+  @IsString()
+  @IsOptional()
+  link: string;
+
   @IsString()
   reasonForRejection?: string; // new field for rejection reasons
+
 }
