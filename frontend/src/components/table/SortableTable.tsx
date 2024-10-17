@@ -20,14 +20,16 @@ const SortableTable: React.FC<SortableTableProps> = ({
 }) => {
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>(null);
 
-    const filteredData = searchTerm
-        ? data.filter(article =>
-            headers.some(header => {
-                const value = article[header.key];
-                return value && value.toString().toLowerCase().includes(searchTerm.toLowerCase());
-            })
-        )
-        : data;
+    const filteredData = useMemo(() => {
+        return searchTerm
+            ? data.filter(article =>
+                headers.some(header => {
+                    const value = article[header.key];
+                    return value && value.toString().toLowerCase().includes(searchTerm.toLowerCase());
+                })
+            )
+            : data;
+    }, [data, headers, searchTerm]);
 
     const sortedData = useMemo(() => {
         let sortableItems = [...filteredData];
@@ -69,22 +71,22 @@ const SortableTable: React.FC<SortableTableProps> = ({
                 </tr>
             </thead>
             <tbody>
-                {sortedData.map(article => (
-                    <tr key={article.id}>
-                        {headers.map(header => (
-                            <td key={header.key}>
-                                {article[header.key]}
-                            </td>
-                        ))}
-                        {showActions && (
-                            <td>
-                                {onApprove && <button onClick={() => onApprove(article.id)} className={styles.approveButton}>Approve</button>}
-                                {onReject && <button onClick={() => onReject(article.id)} className={styles.rejectButton}>Reject</button>}
-                            </td>
-                        )}
-                    </tr>
-                ))}
-            </tbody>
+    {sortedData.map((article, index) => (
+        <tr key={article.id || index}> {/* Ensure unique key for each row */}
+            {headers.map(header => (
+                <td key={`${article.id}-${header.key}`}>
+                    {article[header.key]}
+                </td>
+            ))}
+            {showActions && (
+                <td>
+                    {onApprove && <button onClick={() => onApprove(article.id)} className={styles.approveButton}>Approve</button>}
+                    {onReject && <button onClick={() => onReject(article.id)} className={styles.rejectButton}>Reject</button>}
+                </td>
+            )}
+        </tr>
+    ))}
+</tbody>
         </table>
     );
 };

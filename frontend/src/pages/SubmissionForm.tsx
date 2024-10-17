@@ -7,40 +7,41 @@ import sidePanelStyles from '../styles/sidepanel.module.scss';
 interface Article {
     id: string;  
     title: string;
-    authors: string;
+    author: string;  // Changed from authors to author
     yearOfPublication: number;
     pages?: number;
     volume?: number;
     doi?: string;
     claim: string;
-    typeOfResearch: string;
-    typeOfParticipant: string;
-    status: 'Pending'; 
+    typeOfResearch: 'Case Study' | 'Experiment'; // Enum values
+    typeOfParticipant: 'Student' | 'Practitioner'; // Enum values
 }
 
 interface FormValues {
     title: string;
-    authors: string;
+    author: string;  // Changed from authors to author
     yearOfPublication: number;
     pages?: number;
     volume?: number;
     doi: string;
     claim: string;
-    typeOfResearch: string;
-    typeOfParticipant: string;
+    typeOfResearch: 'Case Study' | 'Experiment'; // Enum values
+    typeOfParticipant: 'Student' | 'Practitioner'; // Enum values
 }
 
 const SubmissionForm: React.FC = () => {
-    const { register, handleSubmit, reset } = useForm<FormValues>();
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>();
     const [isSidePanelOpen, setSidePanelOpen] = useState(false); 
-
     const [submitted, setSubmitted] = useState(false);  
+    const [errorMessage, setErrorMessage] = useState(''); // State to hold error messages
 
     const handleFormSubmit: SubmitHandler<FormValues> = async (data) => {
+        console.log("Submitted data:", data); // Log the submitted data for debugging
+
         const newArticle: Article = {
-            id: `article-${Date.now()}`, // Temporary ID for frontend, should be handled by the backend
+            id: `article-${Date.now()}`, // Temporary ID for frontend
             title: data.title,
-            authors: data.authors,
+            author: data.author,  // Use the corrected field name
             yearOfPublication: data.yearOfPublication,
             pages: data.pages,
             volume: data.volume,
@@ -48,11 +49,10 @@ const SubmissionForm: React.FC = () => {
             claim: data.claim,
             typeOfResearch: data.typeOfResearch,
             typeOfParticipant: data.typeOfParticipant,
-            status: 'Pending',
         };
 
         try {
-            const response = await fetch('/api/articles', {
+            const response = await fetch('http://localhost:8082/api/articles', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -61,14 +61,17 @@ const SubmissionForm: React.FC = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to submit article');
+                const errorResponse = await response.json();
+                console.error('Error response:', errorResponse); // Log the error response for debugging
+                throw new Error(errorResponse.message || 'Failed to submit article');
             }
 
             reset(); // Clear form
             setSubmitted(true); // Show submission success message
+            setErrorMessage(''); // Clear any previous error messages
         } catch (error) {
-            console.error('Error submitting article:', error);
-            alert('There was an error submitting the article. Please try again.');
+            console.error('Error submitting article:', error); // Log the error
+            setErrorMessage('Failed to submit article. Please try again.'); // Update error message state
         }
     };
 
@@ -84,9 +87,9 @@ const SubmissionForm: React.FC = () => {
             <h1 className={styles.formTitle}>Submit an Article</h1>
 
             {submitted && <p className={styles.confirmationMessage}>Article submitted successfully!</p>}
+            {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>} {/* Display error message */}
 
             <form className={styles.form} onSubmit={handleSubmit(handleFormSubmit)}>
-
                 <div className={styles.formItem}>
                     <input 
                         {...register("title", { required: true })} 
@@ -98,8 +101,8 @@ const SubmissionForm: React.FC = () => {
 
                 <div className={styles.formItem}>
                     <input 
-                        {...register("authors", { required: true })} 
-                        placeholder="Authors" 
+                        {...register("author", { required: true })}  // Use the corrected field name
+                        placeholder="Author"  // Change the placeholder to match the field name
                         className={styles.inputField} 
                         required
                     />
@@ -146,21 +149,27 @@ const SubmissionForm: React.FC = () => {
                 </div>
 
                 <div className={styles.formItem}>
-                    <input 
+                    <select 
                         {...register("typeOfResearch", { required: true })} 
-                        placeholder="Type of Research" 
-                        className={styles.inputField} 
-                        required
-                    />
+                        className={styles.inputField}
+                    >
+                        <option value="">Select Type of Research</option>
+                        <option value="Case Study">Case Study</option>
+                        <option value="Experiment">Experiment</option>
+                    </select>
+                    {errors.typeOfResearch && <p className={styles.errorMessage}>This field is required</p>}
                 </div>
 
                 <div className={styles.formItem}>
-                    <input 
+                    <select 
                         {...register("typeOfParticipant", { required: true })} 
-                        placeholder="Type of Participant" 
-                        className={styles.inputField} 
-                        required
-                    />
+                        className={styles.inputField}
+                    >
+                        <option value="">Select Type of Participant</option>
+                        <option value="Student">Student</option>
+                        <option value="Practitioner">Practitioner</option>
+                    </select>
+                    {errors.typeOfParticipant && <p className={styles.errorMessage}>This field is required</p>}
                 </div>
 
                 <button type="submit" className={styles.submitButton}>Submit</button>
