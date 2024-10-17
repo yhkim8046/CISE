@@ -10,9 +10,10 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { ArticleService } from '../services/ArticleService';
+import { ArticleService } from '../services/articleService';
 import { CreateArticleDto } from '../dto/createArticle.dto';
 import { UpdateStatusDto } from '../dto/UpdateStatus.dto';
+import { SubmitToAnalystDto } from '../dto/submitToAnalystDto';
 import { Article } from '../models/article.schema';
 
 @Controller('api/articles')
@@ -114,35 +115,66 @@ export class ArticleController {
     return this.articleService.getRejectedArticles();
   }
 
+  // Submit rejected articles
+  @Post('/rejected')
+  async submitRejectedArticles(@Body() rejectedArticles: Article[]) {
+    const results = await Promise.all(rejectedArticles.map(article => {
+      return this.articleService.storeRejectedArticles(article);
+    }));
+
+    return {
+      message: 'Rejected articles submitted successfully',
+      results,
+    };
+  }
+
   // Get approved articles
   @Get('/approved')
   async getApprovedArticles(): Promise<Article[]> {
     return this.articleService.getDisplayingRequestedArticles();
   }
 
-  // New endpoint to submit approved articles to analyst
-  @Post('/submitToAnalyst')
-  async submitToAnalyst(@Body() articles: Article[]) {
-    const approvedArticles = articles.filter(
-      (article) => article.status === 'Approved',
-    );
-    const rejectedArticles = articles.filter(
-      (article) => article.status === 'Rejected',
-    );
+  // Submit articles to analyst
+@Post('/submitToAnalyst')
+async submitToAnalyst(@Body() submitToAnalystDto: SubmitToAnalystDto) {
+    const articles = submitToAnalystDto.articles;
+
+    // Separate approved and rejected articles
+    const approvedArticles = articles.filter(article => article.status === 'Approved');
+    const rejectedArticles = articles.filter(article => article.status === 'Rejected');
 
     try {
-      await this.articleService.storeApprovedArticles(approvedArticles);
-      await this.articleService.storeRejectedArticles(rejectedArticles);
-      return { message: 'Articles submitted successfully' };
+        // Store rejected articles in the database with a reason
+        const rejectedResults = await Promise.all(rejectedArticles.map(async (article) => {
+            const reason = article.reasonForRejection || 'No reason provided';
+            // Only include properties that exist in the Article type
+            return this.articleService.storeRejectedArticles({
+                // Ensure the Article model has these properties defined
+                // If you're using Mongoose, _id should be used here instead of id
+                _id: article._id,
+                reasonForRejection: reason,
+                // Include other properties from the article as needed
+                ...article,
+            });
+        }));
+
+        // Store approved articles for display
+        await this.articleService.storeApprovedArticles(approvedArticles);
+
+        return {
+            message: 'Articles processed successfully',
+            rejected: rejectedResults,
+        };
     } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'Failed to submit articles',
-          message: error.message,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+        throw new HttpException(
+            {
+                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                error: 'Failed to submit articles',
+                message: error.message,
+            },
+            HttpStatus.INTERNAL_SERVER_ERROR,
+        );
     }
-  }
+}
+
 }

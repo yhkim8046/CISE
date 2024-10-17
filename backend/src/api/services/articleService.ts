@@ -1,15 +1,11 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { Article } from '../models/article.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CreateArticleDto } from '../dto/createArticle.dto';
-import { UpdateStatusDto } from '../dto/UpdateStatus.dto';
-import { RatingArticleDto } from '../dto/ratingArticle.dto';
-import { Moderator } from '../models/moderator.schema';
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { Article } from "../models/article.schema";
+import { RatingArticleDto } from "../dto/ratingArticle.dto";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { CreateArticleDto } from "../dto/createArticle.dto";
+import { UpdateStatusDto } from "../dto/UpdateStatus.dto";
+import { Moderator } from "../models/moderator.schema";
 
 @Injectable()
 export class ArticleService {
@@ -18,6 +14,7 @@ export class ArticleService {
     @InjectModel(Moderator.name) private moderatorModel: Model<Moderator>,
   ) {}
 
+  // Method for testing if the route is functioning
   test(): string {
     return 'Article route testing';
   }
@@ -35,6 +32,7 @@ export class ArticleService {
   }
 
   async create(createArticlesDto: CreateArticleDto): Promise<Article> {
+    // Here, you might consider transforming the DTO if needed
     return this.articleModel.create(createArticlesDto);
   }
 
@@ -68,6 +66,7 @@ export class ArticleService {
       throw new NotFoundException('Moderator not found');
     }
 
+    // Using enum for user roles might be a better practice
     if (moderator.typeOfUser !== 'moderator') {
       throw new ForbiddenException('Only moderators can approve articles');
     }
@@ -102,6 +101,7 @@ export class ArticleService {
       throw new NotFoundException('Article not found');
     }
 
+    // Update ratings and recalculate average
     article.totalRating += ratingArticleDto.rating;
     article.ratingCounter += 1;
     article.averageRating = article.totalRating / article.ratingCounter;
@@ -122,49 +122,25 @@ export class ArticleService {
   }
 
   async submitReviewedArticles(
-    articles: { id: string; evidence: string }[],
+    articles: { id: string; status: string; reasonForRejection?: string }[],
   ): Promise<void> {
-    // Loop through the articles to update their status and evidence in the database
+    // Consider using bulk operations if applicable
     for (const article of articles) {
+      const { id, status, reasonForRejection } = article;
       await this.articleModel
-        .findByIdAndUpdate(article.id, {
-          $set: {
-            status: 'reviewed', // Update the status to 'reviewed'
-            evidence: article.evidence, // Store the evidence provided
-          },
+        .findByIdAndUpdate(id, {
+          status,
+          ...(reasonForRejection && { reasonForRejection }),
         })
         .exec();
     }
   }
 
-  async storeApprovedArticles(articles: Article[]): Promise<void> {
-    // Check if articles are provided
-    if (!articles || articles.length === 0) {
-      throw new NotFoundException('No articles provided');
-    }
-
-    // Update the status of rejected articles in the existing Article schema
-    for (const article of articles) {
-      await this.articleModel
-        .findByIdAndUpdate(article._id, {
-          status: 'approved',
-        })
-        .exec();
-    }
+  async storeRejectedArticles(article: Article): Promise<Article> {
+    return this.articleModel.create(article);
   }
-  async storeRejectedArticles(articles: Article[]): Promise<void> {
-    // Check if articles are provided
-    if (!articles || articles.length === 0) {
-      throw new NotFoundException('No articles provided');
-    }
 
-    // Update the status of rejected articles in the existing Article schema
-    for (const article of articles) {
-      await this.articleModel
-        .findByIdAndUpdate(article._id, {
-          status: 'rejected',
-        })
-        .exec();
-    }
+  async storeApprovedArticles(articles: Article[]): Promise<Article[]> {
+    return this.articleModel.insertMany(articles);
   }
 }

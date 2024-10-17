@@ -14,7 +14,7 @@ interface Article {
     volume?: number;
     doi?: string;
     claim: string;
-    evidence: string;
+    evidence: string; // Added for clarity, may not be in the database initially
     typeOfResearch?: string;
     typeOfParticipant?: string;
 }
@@ -30,8 +30,12 @@ const ApprovalList: React.FC = () => {
         const fetchArticles = async () => {
             setLoading(true);
             try {
-                const storedReviewedArticles = JSON.parse(localStorage.getItem('reviewedArticles') || '[]');
-                setArticles(storedReviewedArticles);
+                const response = await fetch('/api/articles/approved'); // Fetch approved articles from the backend
+                if (!response.ok) {
+                    throw new Error('Failed to fetch approved articles');
+                }
+                const data: Article[] = await response.json();
+                setArticles(data);
             } catch (error) {
                 console.error('Error fetching articles:', error);
             } finally {
@@ -75,7 +79,7 @@ const ApprovalList: React.FC = () => {
             const data = await response.json(); // Parse the JSON response
             console.log('Successfully submitted articles:', data);
 
-            // Optionally, you can reset the selected articles and evidence inputs here
+            // Reset the selected articles and evidence inputs here
             setSelectedArticles({});
             setEvidenceInput({});
             alert('Articles successfully submitted to the database!');

@@ -73,17 +73,7 @@ const SortableTable: React.FC<SortableTableProps> = ({
                     <tr key={article.id}>
                         {headers.map(header => (
                             <td key={header.key}>
-                                {header.key === 'select' ? (
-                                    <div className={styles.checkboxContainer}>
-                                        <input
-                                            type="checkbox"
-                                            checked={!!article.select} // This remains unchanged
-                                            onChange={() => {}} // Controlled by parent component
-                                        />
-                                    </div>
-                                ) : (
-                                    article[header.key]
-                                )}
+                                {article[header.key]}
                             </td>
                         ))}
                         {showActions && (

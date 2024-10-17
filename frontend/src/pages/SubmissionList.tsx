@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import SortableTable from '../components/table/SortableTable';
 import styles from '../styles/submission.module.scss';
-import SidePanel from '../components/nav/SidePanel';
+import SidePanel from '../components/nav/SidePanel'; 
 import sidePanelStyles from '../styles/sidepanel.module.scss';
 
 interface Article {
@@ -14,30 +14,30 @@ interface Article {
     volume?: number;
     doi?: string;
     claim: string;
-    evidence: string;
-    typeOfResearch?: string;
-    typeOfParticipant?: string;
     status?: 'Approved' | 'Rejected' | 'Pending';
 }
 
 const SubmissionList: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
     const [isSidePanelOpen, setSidePanelOpen] = useState(false);
+    const [tempStatus, setTempStatus] = useState<{ [key: string]: 'Approved' | 'Rejected' | 'Pending' | undefined }>({});
 
     useEffect(() => {
-        const storedArticles = localStorage.getItem('articles');
-        if (storedArticles) {
-            try {
-                const articlesWithStatus: Article[] = JSON.parse(storedArticles).map((article: Article) => ({
-                    ...article,
-                    status: article.status || 'Pending',
-                }));
-                setArticles(articlesWithStatus);
-            } catch (error) {
-                console.error('Error parsing articles from localStorage:', error);
-            }
-        }
+        fetchArticles(); // Call the function to fetch articles on component mount
     }, []);
+
+    const fetchArticles = async () => {
+        try {
+            const response = await fetch('/api/articles');
+            if (!response.ok) {
+                throw new Error('Failed to fetch articles');
+            }
+            const fetchedArticles: Article[] = await response.json();
+            setArticles(fetchedArticles);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+        }
+    };
 
     const toggleSidePanel = () => {
         setSidePanelOpen(prevState => !prevState);
@@ -52,49 +52,39 @@ const SubmissionList: React.FC = () => {
         { key: 'volume', label: 'Volume' },
         { key: 'doi', label: 'DOI' },
         { key: 'claim', label: 'Claim' },
-        { key: 'evidence', label: 'Evidence' },
-        { key: 'typeOfResearch', label: 'Type of Research' },
-        { key: 'typeOfParticipant', label: 'Type of Participant' },
         { key: 'status', label: 'Status' },
         { key: 'actions', label: 'Actions' },
     ];
 
     const handleStatusChange = useCallback((id: string, newStatus: 'Approved' | 'Rejected') => {
-        const updatedArticles = articles.map(article =>
-            article.id === id ? { ...article, status: newStatus } : article
-        );
-        setArticles(updatedArticles);
-        localStorage.setItem('articles', JSON.stringify(updatedArticles));
-    }, [articles]);
+        setTempStatus(prev => ({ ...prev, [id]: newStatus }));
+    }, []);
 
-    const handleSubmitToAnalyst = async () => {
-        const approvedArticles = articles.filter(article => article.status === 'Approved');
-        const rejectedArticles = articles.filter(article => article.status === 'Rejected');
+    const handleSubmit = async () => {
+        const updates = articles.map(article => ({
+            id: article.id,
+            status: tempStatus[article.id] || article.status,
+        })).filter(update => update.status);
 
-        localStorage.setItem('reviewedArticles', JSON.stringify(approvedArticles));
-
-        // Optionally send rejected articles to a backend endpoint
         try {
-            const response = await fetch('/api/articles/rejected', {
-                method: 'POST',
+            const response = await fetch('/api/articles/batch-update', {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(rejectedArticles),
+                body: JSON.stringify(updates),
             });
 
             if (!response.ok) {
-                throw new Error('Failed to send rejected articles');
+                throw new Error('Failed to submit changes');
             }
 
-            console.log('Rejected articles sent successfully.');
+            // Refetch articles to get the latest state
+            fetchArticles(); // Refetch articles after the update
+            setTempStatus({}); // Reset temporary status
         } catch (error) {
-            console.error('Error sending rejected articles:', error);
+            console.error('Error submitting changes:', error);
         }
-
-        const remainingArticles = articles.filter(article => article.status === 'Pending');
-        setArticles(remainingArticles);
-        localStorage.setItem('articles', JSON.stringify(remainingArticles));
     };
 
     return (
@@ -108,7 +98,7 @@ const SubmissionList: React.FC = () => {
                     ...article,
                     status: (
                         <div className={styles.statusContainer}>
-                            <span>{article.status}</span>
+                            <span>{tempStatus[article.id] || article.status}</span>
                         </div>
                     ),
                     actions: (
@@ -129,9 +119,7 @@ const SubmissionList: React.FC = () => {
                     ),
                 }))}
             />
-            <button onClick={handleSubmitToAnalyst} className={styles.sendButton}>
-                Submit to Analyst
-            </button>
+            <button onClick={handleSubmit} className={styles.sendButton}>Submit Changes</button>
         </div>
     );
 };

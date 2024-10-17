@@ -35,9 +35,9 @@ const SubmissionForm: React.FC = () => {
     const [isSidePanelOpen, setSidePanelOpen] = useState(false); 
     const [submitted, setSubmitted] = useState(false);  
 
-    const handleFormSubmit: SubmitHandler<FormValues> = (data) => {
+    const handleFormSubmit: SubmitHandler<FormValues> = async (data) => {
         const newArticle: Article = {
-            id: `article-${Date.now()}`, 
+            id: `article-${Date.now()}`, // Temporary ID for frontend, should be handled by the backend
             title: data.title,
             authors: data.authors,
             yearOfPublication: data.yearOfPublication,
@@ -50,12 +50,25 @@ const SubmissionForm: React.FC = () => {
             status: 'Pending',
         };
 
-        // Save article to localStorage (or send it to backend)
-        const existingArticles = JSON.parse(localStorage.getItem('articles') || '[]');
-        existingArticles.push(newArticle);
-        localStorage.setItem('articles', JSON.stringify(existingArticles));
-        reset(); // Clear form
-        setSubmitted(true); // Show submission success message
+        try {
+            const response = await fetch('/api/articles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newArticle),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit article');
+            }
+
+            reset(); // Clear form
+            setSubmitted(true); // Show submission success message
+        } catch (error) {
+            console.error('Error submitting article:', error);
+            alert('There was an error submitting the article. Please try again.');
+        }
     };
 
     const toggleSidePanel = () => {
@@ -102,9 +115,6 @@ const SubmissionForm: React.FC = () => {
                         placeholder="Year of Publication" 
                         className={styles.inputField} 
                         required
-                        min={1900}
-                        max={new Date().getFullYear()}
-                        title={`Please enter a number between 1900 and ${new Date().getFullYear()}`}
                     />
                 </div>
 

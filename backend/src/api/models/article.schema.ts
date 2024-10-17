@@ -6,7 +6,7 @@ export type ArticleDocument = Article & Document; // Extend Document
 @Schema()
 export class Article {
   @Prop({ type: String }) // Explicitly define id
-  _id: string; // Use string if you want to use a custom type, otherwise it's usually ObjectId.
+  _id: string; // Custom type; normally, this is ObjectId unless specified otherwise.
 
   @Prop({ required: true })
   title: string;
@@ -28,7 +28,7 @@ export class Article {
 
   @Prop({
     type: String,
-    enum: ['submitted', 'approved', 'rejected', 'displayable', 'undisplayable'],
+    enum: ['submitted', 'approved', 'rejected'],
     default: 'submitted',
   })
   status: string;
@@ -67,7 +67,7 @@ export class Article {
   typeOfParticipant: string;
 
   @Prop()
-  reasonForRejection: string;
+  reasonForRejection?: string; // Make this optional for rejection reasons
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
