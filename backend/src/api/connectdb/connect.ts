@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import { NextApiRequest, NextApiResponse } from 'next';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -23,11 +24,16 @@ const connectToDatabase = async () => {
     }
   } catch (err) {
     console.error('Database connection error:', err);
+    throw new Error('Failed to connect to MongoDB'); // Ensure the error is caught
   }
 };
 
 // Default export of the API handler
-export default async function handler(req, res) {
-  await connectToDatabase();
-  res.status(200).json({ message: 'Connected to MongoDB' });
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    await connectToDatabase();
+    res.status(200).json({ message: 'Connected to MongoDB' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to connect to MongoDB' });
+  }
 }
