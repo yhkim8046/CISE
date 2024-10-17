@@ -1,12 +1,15 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { Article } from "../models/article.schema";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { CreateArticleDto } from "../dto/createArticle.dto";
-import { UpdateStatusDto } from "../dto/UpdateStatus.dto";
-import { RatingArticleDto } from "../dto/ratingArticle.dto";
-import { Moderator } from "../models/moderator.schema";
-import { ModeratorModule } from "../module/Moderator.module";
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Article } from '../models/article.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { CreateArticleDto } from '../dto/createArticle.dto';
+import { UpdateStatusDto } from '../dto/UpdateStatus.dto';
+import { RatingArticleDto } from '../dto/ratingArticle.dto';
+import { Moderator } from '../models/moderator.schema';
 
 @Injectable()
 export class ArticleService {
@@ -20,90 +23,148 @@ export class ArticleService {
   }
 
   async findAll(): Promise<Article[]> {
-    return await this.articleModel.find().exec();
+    return this.articleModel.find().exec();
   }
 
   async findOne(id: string): Promise<Article> {
-    return await this.articleModel.findById(id).exec();
+    const article = await this.articleModel.findById(id).exec();
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+    return article;
   }
 
-  async create(createArticlesDto: CreateArticleDto) {
-    return await this.articleModel.create(createArticlesDto);
+  async create(createArticlesDto: CreateArticleDto): Promise<Article> {
+    return this.articleModel.create(createArticlesDto);
   }
 
-  async update(id: string, createArticlesDto: CreateArticleDto) {
-    return await this.articleModel.findByIdAndUpdate(id, createArticlesDto, { new: true }).exec();
+  async update(id: string, updateStatusDto: UpdateStatusDto): Promise<Article> {
+    const article = await this.articleModel
+      .findByIdAndUpdate(id, updateStatusDto, { new: true })
+      .exec();
+
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+    return article;
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<Article | null> {
     const deletedArticle = await this.articleModel.findByIdAndDelete(id).exec();
+    if (!deletedArticle) {
+      throw new NotFoundException('Article not found');
+    }
     return deletedArticle;
   }
 
-  //can be used for rejecting an article
   async approvingArticle(
     articleId: string,
     moderatorId: string,
-    updateStatusDto: UpdateStatusDto
+    updateStatusDto: UpdateStatusDto,
   ): Promise<Article> {
     const moderator = await this.moderatorModel.findById(moderatorId).exec();
-  
+
     if (!moderator) {
       throw new NotFoundException('Moderator not found');
     }
-    
+
     if (moderator.typeOfUser !== 'moderator') {
       throw new ForbiddenException('Only moderators can approve articles');
     }
 
-    return await this.articleModel.findByIdAndUpdate(
-      articleId,
-      { $set: { status: updateStatusDto.status }},
-      { new: true }
-    ).exec();
-  }
-  
-  //Finding articles need to be pass to SREC by the moderator
-  async getApprovingRequestedArticles() {
-    return await this.articleModel.find({ status: "submitted" }).exec();
+    return this.articleModel
+      .findByIdAndUpdate(
+        articleId,
+        { $set: { status: updateStatusDto.status } },
+        { new: true },
+      )
+      .exec();
   }
 
-  async getDisplayableArticles(){
-    return await this.articleModel.find({status:"displayable"})
-  }
-  
-  //Finding articles requested to be displaying
-  async getDisplayingRequestedArticles(){
-    return await this.articleModel.find({status:"approved"}).exec();
+  async getApprovingRequestedArticles(): Promise<Article[]> {
+    return this.articleModel.find({ status: 'submitted' }).exec();
   }
 
-  //get Rejected Articles
-  async getRejectedArticles(){
-    return await this.articleModel.find({ status: { $in: ["rejected", "undisplayable"] }}).exec();
-  }  
+  async getDisplayingRequestedArticles(): Promise<Article[]> {
+    return this.articleModel.find({ status: 'approved' }).exec();
+  }
 
-  // Record Rating and Returning Average Rating
-  async ratingArticle(id: string, ratingArticleDto: RatingArticleDto){
+  async getRejectedArticles(): Promise<Article[]> {
+    return this.articleModel
+      .find({ status: { $in: ['rejected', 'undisplayable'] } })
+      .exec();
+  }
+
+  async ratingArticle(id: string, ratingArticleDto: RatingArticleDto) {
     const article = await this.articleModel.findById(id).exec();
-    
+
     if (!article) {
-      throw new Error("Article not found");
+      throw new NotFoundException('Article not found');
     }
 
     article.totalRating += ratingArticleDto.rating;
     article.ratingCounter += 1;
-
     article.averageRating = article.totalRating / article.ratingCounter;
 
     await article.save();
-
     return { article, averageRating: article.averageRating };
   }
 
-  async findArticlesByYearRange(startYear: number, endYear: number): Promise<Article[]> {
-    return this.articleModel.find({
-      yearOfPublication: { $gte: startYear, $lte: endYear },
-    }).exec();
+  async findArticlesByYearRange(
+    startYear: number,
+    endYear: number,
+  ): Promise<Article[]> {
+    return this.articleModel
+      .find({
+        yearOfPublication: { $gte: startYear, $lte: endYear },
+      })
+      .exec();
   }
-  
+
+  async submitReviewedArticles(
+    articles: { id: string; evidence: string }[],
+  ): Promise<void> {
+    // Loop through the articles to update their status and evidence in the database
+    for (const article of articles) {
+      await this.articleModel
+        .findByIdAndUpdate(article.id, {
+          $set: {
+            status: 'reviewed', // Update the status to 'reviewed'
+            evidence: article.evidence, // Store the evidence provided
+          },
+        })
+        .exec();
+    }
+  }
+
+  async storeApprovedArticles(articles: Article[]): Promise<void> {
+    // Check if articles are provided
+    if (!articles || articles.length === 0) {
+      throw new NotFoundException('No articles provided');
+    }
+
+    // Update the status of rejected articles in the existing Article schema
+    for (const article of articles) {
+      await this.articleModel
+        .findByIdAndUpdate(article._id, {
+          status: 'approved',
+        })
+        .exec();
+    }
+  }
+  async storeRejectedArticles(articles: Article[]): Promise<void> {
+    // Check if articles are provided
+    if (!articles || articles.length === 0) {
+      throw new NotFoundException('No articles provided');
+    }
+
+    // Update the status of rejected articles in the existing Article schema
+    for (const article of articles) {
+      await this.articleModel
+        .findByIdAndUpdate(article._id, {
+          status: 'rejected',
+        })
+        .exec();
+    }
+  }
 }

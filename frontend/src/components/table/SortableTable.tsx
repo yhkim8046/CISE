@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import styles from './SortableTable.module.css'; // Adjust the path as needed
+import React, { useState, useMemo } from "react";
+import styles from './SortableTable.module.css';
 
 interface SortableTableProps {
     headers: { key: string; label: string }[];
-    data: Record<string, any>[]; // Use Record for more type safety
-    searchTerm?: string; // Make searchTerm optional
-    showActions?: boolean; // Add showActions prop
+    data: Record<string, any>[];
+    searchTerm?: string;
+    showActions?: boolean;
     onApprove?: (id: string) => void;
     onReject?: (id: string) => void;
 }
@@ -13,8 +13,8 @@ interface SortableTableProps {
 const SortableTable: React.FC<SortableTableProps> = ({
     headers,
     data,
-    searchTerm = '', // Default to empty string
-    showActions = false, // Default to false if not provided
+    searchTerm = '',
+    showActions = false,
     onApprove,
     onReject,
 }) => {
@@ -27,10 +27,9 @@ const SortableTable: React.FC<SortableTableProps> = ({
                 return value && value.toString().toLowerCase().includes(searchTerm.toLowerCase());
             })
         )
-        : data; // If no searchTerm, show all data
+        : data;
 
-    // Sort the data based on the sortConfig
-    const sortedData = React.useMemo(() => {
+    const sortedData = useMemo(() => {
         let sortableItems = [...filteredData];
         if (sortConfig !== null) {
             sortableItems.sort((a, b) => {
@@ -66,19 +65,31 @@ const SortableTable: React.FC<SortableTableProps> = ({
                             {header.label} {sortConfig?.key === header.key ? (sortConfig.direction === 'ascending' ? '↑' : '↓') : ''}
                         </th>
                     ))}
-                    {showActions && <th>Actions</th>} {/* Conditionally render the Actions header */}
+                    {showActions && <th>Actions</th>}
                 </tr>
             </thead>
             <tbody>
                 {sortedData.map(article => (
                     <tr key={article.id}>
                         {headers.map(header => (
-                            <td key={header.key}>{article[header.key]}</td>
+                            <td key={header.key}>
+                                {header.key === 'select' ? (
+                                    <div className={styles.checkboxContainer}>
+                                        <input
+                                            type="checkbox"
+                                            checked={!!article.select} // This remains unchanged
+                                            onChange={() => {}} // Controlled by parent component
+                                        />
+                                    </div>
+                                ) : (
+                                    article[header.key]
+                                )}
+                            </td>
                         ))}
                         {showActions && (
                             <td>
-                                {onApprove && <button onClick={() => onApprove(article.id)}>Approve</button>}
-                                {onReject && <button onClick={() => onReject(article.id)}>Reject</button>}
+                                {onApprove && <button onClick={() => onApprove(article.id)} className={styles.approveButton}>Approve</button>}
+                                {onReject && <button onClick={() => onReject(article.id)} className={styles.rejectButton}>Reject</button>}
                             </td>
                         )}
                     </tr>
@@ -88,4 +99,4 @@ const SortableTable: React.FC<SortableTableProps> = ({
     );
 };
 
-export default SortableTable; // Ensure correct export
+export default SortableTable;

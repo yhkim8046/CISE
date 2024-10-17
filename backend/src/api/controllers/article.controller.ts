@@ -10,14 +10,14 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { ArticleService } from '../services/articleService';
+import { ArticleService } from '../services/ArticleService';
 import { CreateArticleDto } from '../dto/createArticle.dto';
 import { UpdateStatusDto } from '../dto/UpdateStatus.dto';
-import { error } from 'console';
+import { Article } from '../models/article.schema';
 
 @Controller('api/articles')
-export class ArticleController{
-  constructor(private readonly articleService: ArticleService){}
+export class ArticleController {
+  constructor(private readonly articleService: ArticleService) {}
 
   @Get('/test')
   test() {
@@ -26,215 +26,123 @@ export class ArticleController{
 
   // Get all articles
   @Get('/')
-  async findAll() {
-    try {
-      return this.articleService.findAll();
-    } catch {
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'No articles found',
-        },
-        HttpStatus.NOT_FOUND,
-        { cause: error },
-      );
-    }
+  async findAll(): Promise<Article[]> {
+    return this.articleService.findAll();
   }
 
-   // Get one book via id
-   @Get('/:id')
-   async findOne(@Param('id') id: string) {
-     try {
-       return this.articleService.findOne(id);
-     } catch {
-       throw new HttpException(
-         {
-           status: HttpStatus.NOT_FOUND,
-           error: 'No Articles found',
-         },
-         HttpStatus.NOT_FOUND,
-         { cause: error },
-       );
-     }
-   }
-   // Create/add an article
+  // Get one article via id
+  @Get('/:id')
+  async findOne(@Param('id') id: string): Promise<Article> {
+    const article = await this.articleService.findOne(id);
+    if (!article) {
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+    }
+    return article;
+  }
+
+  // Create/add an article
   @Post('/')
   async addArticle(@Body() createArticleDto: CreateArticleDto) {
-  try {
-    await this.articleService.create(createArticleDto);
-    return { message: 'Article added successfully' };
-  } catch (err) {
-    // error log
-    console.error('Error occurred while adding article:', err);
-
-    // Message delivering 
-    throw new HttpException(
-      {
-        status: HttpStatus.BAD_REQUEST,
-        error: 'Unable to add this article',
-        message: err.message,  
-        stack: err.stack,      
-      },
-      HttpStatus.BAD_REQUEST,
-    );
-  }
-}
-
- 
-   // Update a article
-   @Put('/:id')
-   async updateArticle(
-     @Param('id') id: string,
-     @Body() createArticleDto: CreateArticleDto,
-   ) {
-     try {
-       await this.articleService.update(id, createArticleDto);
-       return { message: 'Article updated successfully' };
-     } catch {
-       throw new HttpException(
-         {
-           status: HttpStatus.BAD_REQUEST,
-           error: 'Unable to update this Article',
-         },
-         HttpStatus.BAD_REQUEST,
-         { cause: error },
-       );
-     }
-   }
- 
-   //delete Article
-   async deleteArticle(@Param('id') id: string) {
     try {
-      return await this.articleService.delete(id);
-    } catch {
+      await this.articleService.create(createArticleDto);
+      return { message: 'Article added successfully' };
+    } catch (err) {
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
-          error: 'No such an Article',
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Unable to add this article',
+          message: err.message,
         },
-        HttpStatus.NOT_FOUND,
-        { cause: error },
+        HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  // Update an article
+  @Put('/:id')
+  async updateArticle(
+    @Param('id') id: string,
+    @Body() updateStatusDto: UpdateStatusDto,
+  ) {
+    const updatedArticle = await this.articleService.update(
+      id,
+      updateStatusDto,
+    );
+    if (!updatedArticle) {
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
+    }
+    return { message: 'Article updated successfully' };
+  }
+
+  // Delete Article
+  @Delete('/:id')
+  async deleteArticle(@Param('id') id: string) {
+    const deletedArticle = await this.articleService.delete(id);
+    if (!deletedArticle) {
+      throw new HttpException('No such article', HttpStatus.NOT_FOUND);
+    }
+    return { message: 'Article deleted successfully' };
   }
 
   // Approving Article by Moderator/SREC
   @Put('/approving/:id')
   async approvingArticle(
     @Param('id') id: string,
-    @Query('moderatorId') moderatorId: string, 
+    @Query('moderatorId') moderatorId: string,
     @Body() updateStatusDto: UpdateStatusDto,
   ) {
-    try {
-      await this.articleService.approvingArticle(id, moderatorId, updateStatusDto);
-      return { message: 'Article updated successfully' };
-    } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'Unable to update this Article',
-        },
-        HttpStatus.BAD_REQUEST,
-        { cause: error },
-      );
-    }
-  }
-
-  @Get('/submittedArticles')
-  async getSubmittedArciles(){
-    try{
-      return this.articleService.getApprovingRequestedArticles();
-    }catch {
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'No articles found',
-        },
-        HttpStatus.NOT_FOUND,
-        { cause: error },
-      );
-    }
-  }
-
-  @Get('/rejected')
-  async getRejectedArcticles(){
-    try{
-      return this.articleService.getRejectedArticles();
-    }catch{
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'No articles found',
-        },
-        HttpStatus.NOT_FOUND,
-        { cause: error },
-      );
-    }
-  }
-
-  @Get('/approved')
-  async getApprovedArcticles(){
-    try{
-      return this.articleService.getDisplayingRequestedArticles();
-    }catch{
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: "No articles found",
-        },
-        HttpStatus.NOT_FOUND,
-        {cause: error},
-      );
-    }
-  }
-
-  @Get('/passedArticles')
-  async displayingArticles(){
-    try{
-      return this.articleService.getDisplayableArticles();
-    }catch{
-      throw new HttpException({
-        status: HttpStatus.NOT_FOUND,
-        error: "No articles Found",
-      },
-      HttpStatus.NOT_FOUND,
-      {cause:error},
+    const updatedArticle = await this.articleService.approvingArticle(
+      id,
+      moderatorId,
+      updateStatusDto,
     );
+    if (!updatedArticle) {
+      throw new HttpException('Article not found', HttpStatus.NOT_FOUND);
     }
+    return { message: 'Article approved successfully' };
   }
 
-  // Get articles within a specific year range
-  @Get('/year-range')
-  async findArticlesByYearRange(
-    @Query('startYear') startYear: string,
-    @Query('endYear') endYear: string,
-  ) {
-    // Validate startYear and endYear to ensure they are numbers and within a reasonable range
-    const start = parseInt(startYear, 10);
-    const end = parseInt(endYear, 10);
+  // Get submitted articles
+  @Get('/submittedArticles')
+  async getSubmittedArticles(): Promise<Article[]> {
+    return this.articleService.getApprovingRequestedArticles();
+  }
 
-    if (isNaN(start) || isNaN(end) || start > end || start < 1900 || end > new Date().getFullYear()) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'Invalid year range. Ensure both startYear and endYear are valid numbers, with startYear <= endYear, and within a valid range.',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  // Get rejected articles
+  @Get('/rejected')
+  async getRejectedArticles(): Promise<Article[]> {
+    return this.articleService.getRejectedArticles();
+  }
+
+  // Get approved articles
+  @Get('/approved')
+  async getApprovedArticles(): Promise<Article[]> {
+    return this.articleService.getDisplayingRequestedArticles();
+  }
+
+  // New endpoint to submit approved articles to analyst
+  @Post('/submitToAnalyst')
+  async submitToAnalyst(@Body() articles: Article[]) {
+    const approvedArticles = articles.filter(
+      (article) => article.status === 'Approved',
+    );
+    const rejectedArticles = articles.filter(
+      (article) => article.status === 'Rejected',
+    );
 
     try {
-      return await this.articleService.findArticlesByYearRange(start, end);
+      await this.articleService.storeApprovedArticles(approvedArticles);
+      await this.articleService.storeRejectedArticles(rejectedArticles);
+      return { message: 'Articles submitted successfully' };
     } catch (error) {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'Error retrieving articles within the specified year range',
+          error: 'Failed to submit articles',
           message: error.message,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
-  
-} 
+}

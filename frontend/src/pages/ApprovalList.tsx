@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import SortableTable from '../components/table/SortableTable';
 import styles from '../styles/approval.module.scss';
 import SidePanel from '../components/nav/SidePanel';
 import sidePanelStyles from '../styles/sidepanel.module.scss';
 
+// Article interface
 interface Article {
     id: string;
     title: string;
@@ -17,88 +17,134 @@ interface Article {
     evidence: string;
     typeOfResearch?: string;
     typeOfParticipant?: string;
-    status: 'Pending' | 'Approved' | 'Rejected';
 }
 
 const ApprovalList: React.FC = () => {
-    const [isSidePanelOpen, setSidePanelOpen] = useState(false);
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+    const [evidenceInput, setEvidenceInput] = useState<{ [key: string]: string }>({});
+    const [selectedArticles, setSelectedArticles] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         const fetchArticles = async () => {
-            const storedReviewedArticles: Article[] = JSON.parse(localStorage.getItem('reviewedArticles') || '[]');
-            setArticles(storedReviewedArticles);
-            setLoading(false);
+            setLoading(true);
+            try {
+                const storedReviewedArticles = JSON.parse(localStorage.getItem('reviewedArticles') || '[]');
+                setArticles(storedReviewedArticles);
+            } catch (error) {
+                console.error('Error fetching articles:', error);
+            } finally {
+                setLoading(false);
+            }
         };
         fetchArticles();
     }, []);
 
-    const toggleSidePanel = () => {
-        setSidePanelOpen(!isSidePanelOpen);
+    const handleCheckboxChange = (id: string) => {
+        setSelectedArticles(prev => ({
+            ...prev,
+            [id]: !prev[id], // Toggle the selection state
+        }));
     };
 
-    const handleApprove = (id: string) => {
-        const updatedArticles = articles.map(article =>
-            article.id === id ? { ...article, status: 'Approved' } : article
-        );
-        setArticles(updatedArticles);
-        localStorage.setItem('reviewedArticles', JSON.stringify(updatedArticles));
+    const handleSubmitToDatabase = async () => {
+        const articlesToSubmit = Object.keys(selectedArticles).filter(id => selectedArticles[id]).map(id => ({
+            id, // The article id
+            evidence: evidenceInput[id] || '' // The associated evidence
+        }));
+
+        if (articlesToSubmit.length === 0) {
+            alert('No articles selected for submission.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/articles/submit-reviewed', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', // Set content type to JSON
+                },
+                body: JSON.stringify({ articles: articlesToSubmit }), // Send data as JSON
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+
+            const data = await response.json(); // Parse the JSON response
+            console.log('Successfully submitted articles:', data);
+
+            // Optionally, you can reset the selected articles and evidence inputs here
+            setSelectedArticles({});
+            setEvidenceInput({});
+            alert('Articles successfully submitted to the database!');
+        } catch (error) {
+            console.error('Error submitting articles:', error);
+            alert('There was an error submitting the articles. Please try again.');
+        }
     };
-
-    const handleReject = (id: string) => {
-        const updatedArticles = articles.map(article =>
-            article.id === id ? { ...article, status: 'Rejected' } : article
-        );
-        setArticles(updatedArticles);
-        localStorage.setItem('reviewedArticles', JSON.stringify(updatedArticles));
-    };
-
-    const headers = [
-        { key: 'title', label: 'Title' },
-        { key: 'authors', label: 'Authors' },
-        { key: 'source', label: 'Source' },
-        { key: 'yearOfPublication', label: 'Year of Publication' },
-        { key: 'pages', label: 'Pages' },
-        { key: 'volume', label: 'Volume' },
-        { key: 'doi', label: 'DOI' },
-        { key: 'claim', label: 'Claim' },
-        { key: 'evidence', label: 'Evidence' },
-        { key: 'typeOfResearch', label: 'Type of Research' },
-        { key: 'typeOfParticipant', label: 'Type of Participant' },
-        { key: 'status', label: 'Status' },
-        { key: 'actions', label: 'Actions' }
-    ];
-
-    const modifiedArticles = articles.map(article => ({
-        ...article,
-        statusDisplay: (
-            <div className={styles.statusContainer}>
-                <span>{article.status}</span>
-            </div>
-        ),
-        actions: (
-            <div className={styles.actionButtonsContainer}>
-                <button className={styles.approveButton} onClick={() => handleApprove(article.id)}>Approve</button>
-                <button className={styles.rejectButton} onClick={() => handleReject(article.id)}>Reject</button>
-            </div>
-        )
-    }));
 
     if (loading) return <div>Loading...</div>;
 
     return (
         <div className={styles.container}>
-            {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} />}
-            <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}></button>
+            {isSidePanelOpen && <SidePanel onClose={() => setIsSidePanelOpen(false)} />}
+            <button className={sidePanelStyles.togglePanelButton} onClick={() => setIsSidePanelOpen(!isSidePanelOpen)}></button>
             <h1>Approval Queue</h1>
-            <SortableTable
-                headers={headers}
-                data={modifiedArticles.map(({ statusDisplay, ...article }) => ({
-                    ...article,
-                    status: statusDisplay,
-                }))}
-            />
+            <div className={styles.contentWrapper}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Authors</th>
+                            <th>Source</th>
+                            <th>Year of Publication</th>
+                            <th>Pages</th>
+                            <th>Volume</th>
+                            <th>DOI</th>
+                            <th>Claim</th>
+                            <th>Evidence</th>
+                            <th>Select</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {articles.map(article => (
+                            <tr key={article.id}>
+                                <td>{article.title}</td>
+                                <td>{article.authors}</td>
+                                <td>{article.source}</td>
+                                <td>{article.yearOfPublication}</td>
+                                <td>{article.pages}</td>
+                                <td>{article.volume}</td>
+                                <td>{article.doi}</td>
+                                <td>{article.claim}</td>
+                                <td>
+                                    <textarea
+                                        className={styles.evidenceTextBox}
+                                        value={evidenceInput[article.id] || ''}
+                                        onChange={(e) => setEvidenceInput({ ...evidenceInput, [article.id]: e.target.value })}
+                                        placeholder="Write details here..."
+                                    />
+                                </td>
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        checked={!!selectedArticles[article.id]}
+                                        onChange={() => handleCheckboxChange(article.id)}
+                                    />
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <button
+                className={styles.submitButton}
+                onClick={handleSubmitToDatabase}
+            >
+                Submit Selected Articles to Database
+            </button>
         </div>
     );
 };
