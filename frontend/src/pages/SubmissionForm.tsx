@@ -1,180 +1,171 @@
-import React, { useState } from 'react'; 
-import { useForm, SubmitHandler } from "react-hook-form";
-import styles from '../styles/Form.module.scss';
-import SidePanel from '../components/nav/SidePanel'; 
-import sidePanelStyles from '../styles/sidepanel.module.scss'; 
-
-interface Article {
-    id: string;  
-    title: string;
-    author: string;  // Changed from authors to author
-    yearOfPublication: number;
-    pages?: number;
-    volume?: number;
-    doi?: string;
-    claim: string;
-    typeOfResearch: 'Case Study' | 'Experiment'; // Enum values
-    typeOfParticipant: 'Student' | 'Practitioner'; // Enum values
-}
-
-interface FormValues {
-    title: string;
-    author: string;  // Changed from authors to author
-    yearOfPublication: number;
-    pages?: number;
-    volume?: number;
-    doi: string;
-    claim: string;
-    typeOfResearch: 'Case Study' | 'Experiment'; // Enum values
-    typeOfParticipant: 'Student' | 'Practitioner'; // Enum values
-}
+import React, { useState } from 'react';
 
 const SubmissionForm: React.FC = () => {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>();
-    const [isSidePanelOpen, setSidePanelOpen] = useState(false); 
-    const [submitted, setSubmitted] = useState(false);  
-    const [errorMessage, setErrorMessage] = useState(''); // State to hold error messages
+    const [formData, setFormData] = useState({
+        title: '',
+        author: '', // keep as a string
+        yearOfPublication: '',
+        pages: '',
+        volume: '',
+        doi: '',
+        claim: '',
+        typeOfResearch: 'Case Study', // default value
+        typeOfParticipant: 'Student', // default value
+    });
 
-    const handleFormSubmit: SubmitHandler<FormValues> = async (data) => {
-        console.log("Submitted data:", data); // Log the submitted data for debugging
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prevState => ({ ...prevState, [name]: value }));
+    };
 
-        const newArticle: Article = {
-            id: `article-${Date.now()}`, // Temporary ID for frontend
-            title: data.title,
-            author: data.author,  // Use the corrected field name
-            yearOfPublication: data.yearOfPublication,
-            pages: data.pages,
-            volume: data.volume,
-            doi: data.doi,
-            claim: data.claim,
-            typeOfResearch: data.typeOfResearch,
-            typeOfParticipant: data.typeOfParticipant,
+    const handleFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+    
+        const dataToSubmit = {
+            ...formData,
+            authors: formData.author.split(',').map(author => author.trim()).join('; '),
+            yearOfPublication: Number(formData.yearOfPublication),
+            pages: formData.pages ? Number(formData.pages) : undefined,
+            volume: formData.volume ? Number(formData.volume) : undefined,
         };
-
+    
+        console.log('Data to submit:', dataToSubmit); // Log the data before sending
+    
         try {
             const response = await fetch('http://localhost:8082/api/articles', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(newArticle),
+                body: JSON.stringify(dataToSubmit),
             });
-
+    
             if (!response.ok) {
                 const errorResponse = await response.json();
-                console.error('Error response:', errorResponse); // Log the error response for debugging
-                throw new Error(errorResponse.message || 'Failed to submit article');
+                console.error('Backend error:', errorResponse);
+                throw new Error(`Failed to submit the article: ${errorResponse.error}`);
             }
-
-            reset(); // Clear form
-            setSubmitted(true); // Show submission success message
-            setErrorMessage(''); // Clear any previous error messages
+    
+            alert('Article submitted successfully!');
         } catch (error) {
-            console.error('Error submitting article:', error); // Log the error
-            setErrorMessage('Failed to submit article. Please try again.'); // Update error message state
+            console.error('Error submitting article:', error);
         }
     };
-
-    const toggleSidePanel = () => {
-        setSidePanelOpen(!isSidePanelOpen);
-    };
+    
 
     return (
-        <div className={styles.formContainer}>
-            {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} />}
-            <button onClick={toggleSidePanel} className={sidePanelStyles.togglePanelButton}></button>
-            
-            <h1 className={styles.formTitle}>Submit an Article</h1>
+        <form onSubmit={handleFormSubmit}>
+            <div>
+                <label htmlFor="title">Title</label>
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    required
+                />
+            </div>
 
-            {submitted && <p className={styles.confirmationMessage}>Article submitted successfully!</p>}
-            {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>} {/* Display error message */}
+            <div>
+                <label htmlFor="author">Authors (comma-separated)</label>
+                <input
+                    type="text"
+                    id="author"
+                    name="author"
+                    value={formData.author}
+                    onChange={handleInputChange}
+                    required
+                />
+                <small>Enter authors separated by commas.</small>
+            </div>
 
-            <form className={styles.form} onSubmit={handleSubmit(handleFormSubmit)}>
-                <div className={styles.formItem}>
-                    <input 
-                        {...register("title", { required: true })} 
-                        placeholder="Title" 
-                        className={styles.inputField} 
-                        required
-                    />
-                </div>
+            <div>
+                <label htmlFor="yearOfPublication">Year of Publication</label>
+                <input
+                    type="number"
+                    id="yearOfPublication"
+                    name="yearOfPublication"
+                    value={formData.yearOfPublication}
+                    onChange={handleInputChange}
+                    required
+                />
+            </div>
 
-                <div className={styles.formItem}>
-                    <input 
-                        {...register("author", { required: true })}  // Use the corrected field name
-                        placeholder="Author"  // Change the placeholder to match the field name
-                        className={styles.inputField} 
-                        required
-                    />
-                </div>
+            <div>
+                <label htmlFor="pages">Pages</label>
+                <input
+                    type="number"
+                    id="pages"
+                    name="pages"
+                    value={formData.pages}
+                    onChange={handleInputChange}
+                />
+            </div>
 
-                <div className={styles.formItem}>
-                    <input 
-                        {...register("yearOfPublication", { 
-                            required: true, 
-                            min: 1900, 
-                            max: new Date().getFullYear(),
-                        })} 
-                        type="number" 
-                        placeholder="Year of Publication" 
-                        className={styles.inputField} 
-                        required
-                    />
-                </div>
+            <div>
+                <label htmlFor="volume">Volume</label>
+                <input
+                    type="number"
+                    id="volume"
+                    name="volume"
+                    value={formData.volume}
+                    onChange={handleInputChange}
+                />
+            </div>
 
-                <div className={styles.formItem}>
-                    <input {...register("pages")} type="number" placeholder="Pages (optional)" className={styles.inputField} />
-                </div>
+            <div>
+                <label htmlFor="doi">DOI</label>
+                <input
+                    type="url"
+                    id="doi"
+                    name="doi"
+                    value={formData.doi}
+                    onChange={handleInputChange}
+                />
+            </div>
 
-                <div className={styles.formItem}>
-                    <input {...register("volume")} type="number" placeholder="Volume (optional)" className={styles.inputField} />
-                </div>
-                
-                <div className={styles.formItem}>
-                    <input 
-                        {...register("doi", { required: true })} 
-                        placeholder="DOI" 
-                        className={styles.inputField} 
-                        required
-                    />
-                </div>
+            <div>
+                <label htmlFor="claim">Claim</label>
+                <textarea
+                    id="claim"
+                    name="claim"
+                    value={formData.claim}
+                    onChange={handleInputChange}
+                    required
+                />
+            </div>
 
-                <div className={styles.formItem}>
-                    <input 
-                        {...register("claim", { required: true })} 
-                        placeholder="Claim" 
-                        className={styles.inputField} 
-                        required
-                    />
-                </div>
+            <div>
+                <label htmlFor="typeOfResearch">Type of Research</label>
+                <select
+                    id="typeOfResearch"
+                    name="typeOfResearch"
+                    value={formData.typeOfResearch}
+                    onChange={handleInputChange}
+                    required
+                >
+                    <option value="Case Study">Case Study</option>
+                    <option value="Experiment">Experiment</option>
+                </select>
+            </div>
 
-                <div className={styles.formItem}>
-                    <select 
-                        {...register("typeOfResearch", { required: true })} 
-                        className={styles.inputField}
-                    >
-                        <option value="">Select Type of Research</option>
-                        <option value="Case Study">Case Study</option>
-                        <option value="Experiment">Experiment</option>
-                    </select>
-                    {errors.typeOfResearch && <p className={styles.errorMessage}>This field is required</p>}
-                </div>
+            <div>
+                <label htmlFor="typeOfParticipant">Type of Participant</label>
+                <select
+                    id="typeOfParticipant"
+                    name="typeOfParticipant"
+                    value={formData.typeOfParticipant}
+                    onChange={handleInputChange}
+                    required
+                >
+                    <option value="Student">Student</option>
+                    <option value="Practitioner">Practitioner</option>
+                </select>
+            </div>
 
-                <div className={styles.formItem}>
-                    <select 
-                        {...register("typeOfParticipant", { required: true })} 
-                        className={styles.inputField}
-                    >
-                        <option value="">Select Type of Participant</option>
-                        <option value="Student">Student</option>
-                        <option value="Practitioner">Practitioner</option>
-                    </select>
-                    {errors.typeOfParticipant && <p className={styles.errorMessage}>This field is required</p>}
-                </div>
-
-                <button type="submit" className={styles.submitButton}>Submit</button>
-            </form>
-        </div>
+            <button type="submit">Submit</button>
+        </form>
     );
 };
 

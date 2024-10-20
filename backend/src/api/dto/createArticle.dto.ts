@@ -14,7 +14,7 @@ export class CreateArticleDto {
 
   @IsString()
   @IsNotEmpty({ message: 'Authors are required' })
-  authors: string;
+  author: string;
 
   @IsNumber()
   @IsPositive()

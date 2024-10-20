@@ -5,15 +5,14 @@ export type ArticleDocument = Article & Document;
 
 @Schema()
 export class Article {
-  // Consider letting Mongoose handle the _id field automatically
-  @Prop() // Remove custom id field unless necessary
-  _id: string; 
+  // Remove the custom _id field
+  // _id: string; // MongoDB automatically generates this, so no need to declare it
 
   @Prop({ required: true })
   title: string;
 
   @Prop({ required: true })
-  authors: string[];
+  author: string;
 
   @Prop()
   yearOfPublication: number;
@@ -40,7 +39,7 @@ export class Article {
   @Prop()
   evidence: string;
 
-  @Prop() // Consider handling this in the service when an article is approved
+  @Prop()
   approvedDate: Date;
 
   @Prop({ min: 0, max: 5 })
@@ -74,7 +73,7 @@ export class Article {
   link: string;
 
   @Prop()
-  reasonForRejection?: string; // Make this optional for rejection reasons
+  reasonForRejection?: string; // Optional field
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
