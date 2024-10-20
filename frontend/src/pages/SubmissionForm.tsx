@@ -5,7 +5,7 @@ import SidePanel from '../components/nav/SidePanel';
 import sidePanelStyles from '../styles/sidepanel.module.scss'; 
 
 interface Article {
-    id: string;  
+    // id: string;  
     title: string;
     author: string;  // Changed from authors to author
     yearOfPublication: number;
@@ -37,9 +37,10 @@ const SubmissionForm: React.FC = () => {
 
     const handleFormSubmit: SubmitHandler<FormValues> = async (data) => {
         console.log("Submitted data:", data); // Log the submitted data for debugging
-
+    
         const newArticle: Article = {
-            id: `article-${Date.now()}`, // Temporary ID for frontend
+            // No need to manually assign an id, MongoDB will generate one
+            // id: `article-${Date.now()}`, // Remove this line
             title: data.title,
             author: data.author,  // Use the corrected field name
             yearOfPublication: data.yearOfPublication,
@@ -50,7 +51,7 @@ const SubmissionForm: React.FC = () => {
             typeOfResearch: data.typeOfResearch,
             typeOfParticipant: data.typeOfParticipant,
         };
-
+    
         try {
             const response = await fetch('http://localhost:8082/api/articles', {
                 method: 'POST',
@@ -59,13 +60,13 @@ const SubmissionForm: React.FC = () => {
                 },
                 body: JSON.stringify(newArticle),
             });
-
+    
             if (!response.ok) {
                 const errorResponse = await response.json();
                 console.error('Error response:', errorResponse); // Log the error response for debugging
                 throw new Error(errorResponse.message || 'Failed to submit article');
             }
-
+    
             reset(); // Clear form
             setSubmitted(true); // Show submission success message
             setErrorMessage(''); // Clear any previous error messages
@@ -74,6 +75,7 @@ const SubmissionForm: React.FC = () => {
             setErrorMessage('Failed to submit article. Please try again.'); // Update error message state
         }
     };
+    
 
     const toggleSidePanel = () => {
         setSidePanelOpen(!isSidePanelOpen);

@@ -44,6 +44,7 @@ export class ArticleController {
   // Create/add an article
   @Post('/')
   async addArticle(@Body() createArticleDto: CreateArticleDto) {
+      console.log('Received article data:', createArticleDto); // Log the received data
       try {
           await this.articleService.create(createArticleDto);
           return { message: 'Article added successfully' };
@@ -58,7 +59,6 @@ export class ArticleController {
           );
       }
   }
-  
 
   // Update an article
   @Put('/:id')
@@ -150,7 +150,6 @@ export class ArticleController {
         const reason = article.reasonForRejection || 'No reason provided';
         // Store rejected articles; ensure the Article model has these properties defined
         return this.articleService.storeRejectedArticles({
-          _id: article._id,
           reasonForRejection: reason,
           ...article,
         });
