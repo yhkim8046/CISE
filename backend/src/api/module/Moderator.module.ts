@@ -7,10 +7,16 @@ import { Moderator, ModeratorSchema } from '../models/moderator.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Moderator.name, schema: ModeratorSchema }]),
+    MongooseModule.forFeature([
+      { name: Moderator.name, schema: ModeratorSchema },
+    ]),
   ],
   controllers: [ModeratorController],
   providers: [ModeratorService],
-  exports: [MongooseModule.forFeature([{ name: Moderator.name, schema: ModeratorSchema }])],
+  exports: [
+    MongooseModule.forFeature([
+      { name: Moderator.name, schema: ModeratorSchema },
+    ]),
+  ],
 })
 export class ModeratorModule {}

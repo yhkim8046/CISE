@@ -5,7 +5,7 @@ import sidePanelStyles from '../styles/sidepanel.module.scss';
 
 // Article interface
 interface Article {
-    id: string;
+    _id: string;
     title: string;
     authors: string;
     source: string;
@@ -17,6 +17,7 @@ interface Article {
     evidence: string; // Added for clarity, may not be in the database initially
     typeOfResearch?: string;
     typeOfParticipant?: string;
+    status?: 'Approved' | 'Rejected' | 'Pending'; // Ensure status is included in the type
 }
 
 const ApprovalList: React.FC = () => {
@@ -30,12 +31,15 @@ const ApprovalList: React.FC = () => {
         const fetchArticles = async () => {
             setLoading(true);
             try {
-                const response = await fetch('/api/articles/approved'); // Fetch approved articles from the backend
+                const response = await fetch('http://localhost:8082/api/articles'); // Fetch all articles from the backend
                 if (!response.ok) {
-                    throw new Error('Failed to fetch approved articles');
+                    throw new Error('Failed to fetch articles');
                 }
                 const data: Article[] = await response.json();
-                setArticles(data);
+                
+                // Filter to only include articles with status 'Approved'
+                const approvedArticles = data.filter(article => article.status === 'Approved');
+                setArticles(approvedArticles);
             } catch (error) {
                 console.error('Error fetching articles:', error);
             } finally {
@@ -45,18 +49,27 @@ const ApprovalList: React.FC = () => {
         fetchArticles();
     }, []);
 
-    const handleCheckboxChange = (id: string) => {
+    const handleCheckboxChange = (_id: string) => {
         setSelectedArticles(prev => ({
             ...prev,
-            [id]: !prev[id], // Toggle the selection state
+            [_id]: !prev[_id], // Toggle the selection state
+        }));
+    };
+
+    const handleEvidenceChange = (_id: string, value: string) => {
+        setEvidenceInput(prev => ({
+            ...prev,
+            [_id]: value, // Update evidence for the specific article
         }));
     };
 
     const handleSubmitToDatabase = async () => {
-        const articlesToSubmit = Object.keys(selectedArticles).filter(id => selectedArticles[id]).map(id => ({
-            id, // The article id
-            evidence: evidenceInput[id] || '' // The associated evidence
-        }));
+        const articlesToSubmit = Object.keys(selectedArticles)
+            .filter(_id => selectedArticles[_id])
+            .map(_id => ({
+                _id, // The article id
+                evidence: evidenceInput[_id] || '' // The associated evidence
+            }));
 
         if (articlesToSubmit.length === 0) {
             alert('No articles selected for submission.');
@@ -64,7 +77,7 @@ const ApprovalList: React.FC = () => {
         }
 
         try {
-            const response = await fetch('/api/articles/submit-reviewed', {
+            const response = await fetch('http://localhost:8082/api/articles/submitReviewed', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json', // Set content type to JSON
@@ -114,7 +127,7 @@ const ApprovalList: React.FC = () => {
                     </thead>
                     <tbody>
                         {articles.map(article => (
-                            <tr key={article.id}>
+                            <tr key={article._id}>
                                 <td>{article.title}</td>
                                 <td>{article.authors}</td>
                                 <td>{article.source}</td>
@@ -126,16 +139,16 @@ const ApprovalList: React.FC = () => {
                                 <td>
                                     <textarea
                                         className={styles.evidenceTextBox}
-                                        value={evidenceInput[article.id] || ''}
-                                        onChange={(e) => setEvidenceInput({ ...evidenceInput, [article.id]: e.target.value })}
+                                        value={evidenceInput[article._id] || ''}
+                                        onChange={(e) => handleEvidenceChange(article._id, e.target.value)} // Pass the value directly
                                         placeholder="Write details here..."
                                     />
                                 </td>
                                 <td>
                                     <input
                                         type="checkbox"
-                                        checked={!!selectedArticles[article.id]}
-                                        onChange={() => handleCheckboxChange(article.id)}
+                                        checked={!!selectedArticles[article._id]}
+                                        onChange={() => handleCheckboxChange(article._id)}
                                     />
                                 </td>
                             </tr>
