@@ -189,7 +189,6 @@ export class ArticleController {
   }
 
   // Batch update articles
-  // Batch update articles
   @Patch('/batch-update')
   async batchUpdateStatus(
     @Body() updates: UpdateStatusDto[],
@@ -197,5 +196,25 @@ export class ArticleController {
     console.log('Batch update requested with:', updates); // Debug log
     await this.articleService.batchUpdateStatus(updates); // Ensure service handles the update logic
     return { message: 'Batch update successful' };
+  }
+
+  @Post('/submitReviewed')
+  async submitReviewed(
+    @Body() body: { articles: { _id: string; evidence: string }[] },
+  ): Promise<{ message: string }> {
+    try {
+      // Pass the articles data to the service layer
+      await this.articleService.submitReviewedArticles(body.articles);
+      return { message: 'Articles successfully submitted and updated' };
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Failed to submit reviewed articles',
+          message: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

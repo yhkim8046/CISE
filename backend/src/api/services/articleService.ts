@@ -9,6 +9,26 @@ import { Moderator } from '../models/moderator.schema';
 
 @Injectable()
 export class ArticleService {
+  async submitReviewedArticles(
+    articles: { _id: string; evidence: string }[],
+  ): Promise<void> {
+    // Loop over each article and update it with the provided evidence
+    for (const article of articles) {
+      await this.articleModel
+        .findByIdAndUpdate(
+          article._id, // Find the article by its ID
+          {
+            $set: {
+              evidence: article.evidence, // Set the evidence field with the new value
+              status: 'Submitted', // Optionally update the status to 'Reviewed' or another appropriate status
+            },
+          },
+          { new: true }, // Return the updated article
+        )
+        .exec(); // Execute the query
+    }
+  }
+
   constructor(
     @InjectModel(Article.name) private articleModel: Model<ArticleDocument>,
     @InjectModel(Moderator.name) private moderatorModel: Model<Moderator>,
