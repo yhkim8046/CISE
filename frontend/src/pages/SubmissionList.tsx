@@ -5,7 +5,7 @@ import SidePanel from '../components/nav/SidePanel';
 import sidePanelStyles from '../styles/sidepanel.module.scss';
 
 interface Article {
-    id: string;
+    _id: string;
     title: string;
     authors: string;
     source: string;
@@ -20,7 +20,7 @@ interface Article {
 const SubmissionList: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
     const [isSidePanelOpen, setSidePanelOpen] = useState(false);
-    const [tempStatus, setTempStatus] = useState<{ [key: string]: 'Approved' | 'Rejected' | 'Pending' | undefined }>({});
+    const [tempStatus, setTempStatus] = useState<{ [key: string]: 'Approved' | 'Rejected' | undefined }>({});
 
     useEffect(() => {
         fetchArticles(); // Call the function to fetch articles on component mount
@@ -28,16 +28,20 @@ const SubmissionList: React.FC = () => {
 
     const fetchArticles = async () => {
         try {
-            const response = await fetch('/api/articles');
+            const response = await fetch('http://localhost:8082/api/articles'); // Updated port here
             if (!response.ok) {
                 throw new Error('Failed to fetch articles');
             }
             const fetchedArticles: Article[] = await response.json();
-            setArticles(fetchedArticles);
+            
+            // Filter to only include articles with status 'Pending'
+            const pendingArticles = fetchedArticles.filter(article => article.status === 'Pending');
+            setArticles(pendingArticles);
         } catch (error) {
             console.error('Error fetching articles:', error);
+            // You might want to show a notification to the user here
         }
-    };
+    };    
 
     const toggleSidePanel = () => {
         setSidePanelOpen(prevState => !prevState);
@@ -56,37 +60,42 @@ const SubmissionList: React.FC = () => {
         { key: 'actions', label: 'Actions' },
     ];
 
-    const handleStatusChange = useCallback((id: string, newStatus: 'Approved' | 'Rejected') => {
-        setTempStatus(prev => ({ ...prev, [id]: newStatus }));
+    const handleStatusChange = useCallback((_id: string, newStatus: 'Approved' | 'Rejected') => {
+        setTempStatus(prev => ({ ...prev, [_id]: newStatus }));
     }, []);
 
     const handleSubmit = async () => {
         const updates = articles.map(article => ({
-            id: article.id,
-            status: tempStatus[article.id] || article.status,
-        })).filter(update => update.status);
-
+            _id: article._id,
+            status: tempStatus[article._id] || article.status,
+        })).filter(update => update.status); // Only keep updates with a status
+    
+        if (updates.length === 0) {
+            console.warn('No status changes to submit');
+            return; // Exit early if there are no updates
+        }
+    
         try {
-            const response = await fetch('/api/articles/batch-update', {
+            const response = await fetch('http://localhost:8082/api/articles/batch-update', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(updates),
             });
-
+    
             if (!response.ok) {
-                throw new Error('Failed to submit changes');
+                throw new Error(`Failed to submit changes: ${response.status} ${response.statusText}`);
             }
-
-            // Refetch articles to get the latest state
-            fetchArticles(); // Refetch articles after the update
+    
+            await fetchArticles(); // Refetch articles after the update
             setTempStatus({}); // Reset temporary status
         } catch (error) {
             console.error('Error submitting changes:', error);
         }
     };
-
+    
+    
     return (
         <div className={styles.container}>
             {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} />}
@@ -98,20 +107,20 @@ const SubmissionList: React.FC = () => {
                     ...article,
                     status: (
                         <div className={styles.statusContainer}>
-                            <span>{tempStatus[article.id] || article.status}</span>
+                            <span>{tempStatus[article._id] || article.status}</span>
                         </div>
                     ),
                     actions: (
                         <div className={styles.actionButtonsContainer}>
                             <button
                                 className={styles.approveButton}
-                                onClick={() => handleStatusChange(article.id, 'Approved')}
+                                onClick={() => handleStatusChange(article._id, 'Approved')}
                             >
                                 Approve
                             </button>
                             <button
                                 className={styles.rejectButton}
-                                onClick={() => handleStatusChange(article.id, 'Rejected')}
+                                onClick={() => handleStatusChange(article._id, 'Rejected')}
                             >
                                 Reject
                             </button>
@@ -119,7 +128,9 @@ const SubmissionList: React.FC = () => {
                     ),
                 }))}
             />
-            <button onClick={handleSubmit} className={styles.sendButton}>Submit Changes</button>
+            <button onClick={handleSubmit} className={styles.sendButton} disabled={Object.keys(tempStatus).length === 0}>
+                Submit Changes
+            </button>
         </div>
     );
 };
