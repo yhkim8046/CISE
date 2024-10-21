@@ -71,22 +71,36 @@ const SortableTable: React.FC<SortableTableProps> = ({
                 </tr>
             </thead>
             <tbody>
-    {sortedData.map((article, index) => (
-        <tr key={article.id || index}> {/* Ensure unique key for each row */}
-            {headers.map(header => (
-                <td key={`${article.id}-${header.key}`}>
-                    {article[header.key]}
-                </td>
-            ))}
-            {showActions && (
-                <td>
-                    {onApprove && <button onClick={() => onApprove(article.id)} className={styles.approveButton}>Approve</button>}
-                    {onReject && <button onClick={() => onReject(article.id)} className={styles.rejectButton}>Reject</button>}
-                </td>
-            )}
-        </tr>
-    ))}
-</tbody>
+                {sortedData.map((article, index) => (
+                    <tr key={article._id || index}>
+                        {headers.map(header => (
+                            <td key={`${article._id}-${header.key}`}>
+                                {header.key === 'status' ? (
+                                    <div className={styles.statusContainer}>
+                                        <span>{article[header.key]}</span>
+                                    </div>
+                                ) : (
+                                    article[header.key]
+                                )}
+                            </td>
+                        ))}
+                        {showActions && (
+                            <td>
+                                {onApprove && (
+                                    <button onClick={() => onApprove(article._id)} className={styles.approveButton}>
+                                        Approve
+                                    </button>
+                                )}
+                                {onReject && (
+                                    <button onClick={() => onReject(article._id)} className={styles.rejectButton}>
+                                        Reject
+                                    </button>
+                                )}
+                            </td>
+                        )}
+                    </tr>
+                ))}
+            </tbody>
         </table>
     );
 };

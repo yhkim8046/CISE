@@ -1,16 +1,16 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { Article } from "../models/article.schema";
-import { RatingArticleDto } from "../dto/ratingArticle.dto";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { CreateArticleDto } from "../dto/createArticle.dto";
-import { UpdateStatusDto } from "../dto/UpdateStatus.dto";
-import { Moderator } from "../models/moderator.schema";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Article, ArticleDocument } from '../models/article.schema';
+import { RatingArticleDto } from '../dto/ratingArticle.dto';
+import { CreateArticleDto } from '../dto/createArticle.dto';
+import { UpdateStatusDto } from '../dto/updateStatus.dto';
+import { Moderator } from '../models/moderator.schema';
 
 @Injectable()
 export class ArticleService {
   constructor(
-    @InjectModel(Article.name) private articleModel: Model<Article>,
+    @InjectModel(Article.name) private articleModel: Model<ArticleDocument>,
     @InjectModel(Moderator.name) private moderatorModel: Model<Moderator>,
   ) {}
 
@@ -23,8 +23,8 @@ export class ArticleService {
     return this.articleModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Article> {
-    const article = await this.articleModel.findById(id).exec();
+  async findOne(_id: string): Promise<Article> {
+    const article = await this.articleModel.findById(_id).exec();
     if (!article) {
       throw new NotFoundException('Article not found');
     }
@@ -32,13 +32,15 @@ export class ArticleService {
   }
 
   async create(createArticlesDto: CreateArticleDto): Promise<Article> {
-    // Here, you might consider transforming the DTO if needed
     return this.articleModel.create(createArticlesDto);
   }
 
-  async update(id: string, updateStatusDto: UpdateStatusDto): Promise<Article> {
+  async update(
+    _id: string,
+    updateStatusDto: UpdateStatusDto,
+  ): Promise<Article> {
     const article = await this.articleModel
-      .findByIdAndUpdate(id, updateStatusDto, { new: true })
+      .findByIdAndUpdate(_id, updateStatusDto, { new: true })
       .exec();
 
     if (!article) {
@@ -47,8 +49,10 @@ export class ArticleService {
     return article;
   }
 
-  async delete(id: string): Promise<Article | null> {
-    const deletedArticle = await this.articleModel.findByIdAndDelete(id).exec();
+  async delete(_id: string): Promise<Article | null> {
+    const deletedArticle = await this.articleModel
+      .findByIdAndDelete(_id)
+      .exec();
     if (!deletedArticle) {
       throw new NotFoundException('Article not found');
     }
@@ -56,24 +60,13 @@ export class ArticleService {
   }
 
   async approvingArticle(
-    articleId: string,
+    _id: string,
     moderatorId: string,
     updateStatusDto: UpdateStatusDto,
   ): Promise<Article> {
-    const moderator = await this.moderatorModel.findById(moderatorId).exec();
-
-    if (!moderator) {
-      throw new NotFoundException('Moderator not found');
-    }
-
-    // Using enum for user roles might be a better practice
-    if (moderator.typeOfUser !== 'moderator') {
-      throw new ForbiddenException('Only moderators can approve articles');
-    }
-
     return this.articleModel
       .findByIdAndUpdate(
-        articleId,
+        _id,
         { $set: { status: updateStatusDto.status } },
         { new: true },
       )
@@ -81,66 +74,48 @@ export class ArticleService {
   }
 
   async getApprovingRequestedArticles(): Promise<Article[]> {
-    return this.articleModel.find({ status: 'submitted' }).exec();
+    return this.articleModel.find({ status: 'Submitted' }).exec();
   }
 
   async getDisplayingRequestedArticles(): Promise<Article[]> {
-    return this.articleModel.find({ status: 'approved' }).exec();
+    return this.articleModel.find({ status: 'Approved' }).exec();
   }
 
   async getRejectedArticles(): Promise<Article[]> {
-    return this.articleModel
-      .find({ status: { $in: ['rejected', 'undisplayable'] } })
-      .exec();
+    return this.articleModel.find({ status: { $in: ['Rejected'] } }).exec();
   }
 
-  async ratingArticle(id: string, ratingArticleDto: RatingArticleDto) {
-    const article = await this.articleModel.findById(id).exec();
+  async ratingArticle(_id: string, ratingArticleDto: RatingArticleDto) {
+    const article = await this.articleModel.findById(_id).exec();
 
     if (!article) {
       throw new NotFoundException('Article not found');
     }
 
-    // Update ratings and recalculate average
-    article.totalRating += ratingArticleDto.rating;
-    article.ratingCounter += 1;
-    article.averageRating = article.totalRating / article.ratingCounter;
+    article.rating = ratingArticleDto.rating;
 
-    await article.save();
-    return { article, averageRating: article.averageRating };
+    return article.save();
   }
 
-  async findArticlesByYearRange(
-    startYear: number,
-    endYear: number,
-  ): Promise<Article[]> {
-    return this.articleModel
-      .find({
-        yearOfPublication: { $gte: startYear, $lte: endYear },
-      })
-      .exec();
+  async storeRejectedArticles(rejectedArticle: Article): Promise<Article> {
+    return this.articleModel.create(rejectedArticle);
   }
 
-  async submitReviewedArticles(
-    articles: { id: string; status: string; reasonForRejection?: string }[],
-  ): Promise<void> {
-    // Consider using bulk operations if applicable
-    for (const article of articles) {
-      const { id, status, reasonForRejection } = article;
-      await this.articleModel
-        .findByIdAndUpdate(id, {
-          status,
-          ...(reasonForRejection && { reasonForRejection }),
-        })
-        .exec();
-    }
+  async storeApprovedArticles(approvedArticles: Article[]): Promise<void> {
+    await Promise.all(
+      approvedArticles.map((article) => this.articleModel.create(article)),
+    );
   }
 
-  async storeRejectedArticles(article: Article): Promise<Article> {
-    return this.articleModel.create(article);
-  }
+  async batchUpdateStatus(updates: UpdateStatusDto[]) {
+    const updatePromises = updates.map((update) =>
+      this.articleModel.updateOne(
+        { _id: update._id },
+        { status: update.status },
+      ),
+    );
 
-  async storeApprovedArticles(articles: Article[]): Promise<Article[]> {
-    return this.articleModel.insertMany(articles);
+    await Promise.all(updatePromises); // Wait for all updates to complete
+    return { message: 'Batch update successful' }; // Return success message
   }
 }
