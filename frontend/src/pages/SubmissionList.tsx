@@ -7,8 +7,7 @@ import sidePanelStyles from '../styles/sidepanel.module.scss';
 interface Article {
     _id: string;
     title: string;
-    authors: string;
-    source: string;
+    author: string;
     yearOfPublication: number;
     pages?: number;
     volume?: number;
@@ -19,8 +18,10 @@ interface Article {
 
 const SubmissionList: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
+    const [rejectedArticles, setRejectedArticles] = useState<Article[]>([]);
     const [isSidePanelOpen, setSidePanelOpen] = useState(false);
     const [tempStatus, setTempStatus] = useState<{ [key: string]: 'Approved' | 'Rejected' | undefined }>({});
+    const [showRejected, setShowRejected] = useState(false);
 
     useEffect(() => {
         fetchArticles(); // Call the function to fetch articles on component mount
@@ -37,11 +38,14 @@ const SubmissionList: React.FC = () => {
             // Filter to only include articles with status 'Pending'
             const pendingArticles = fetchedArticles.filter(article => article.status === 'Pending');
             setArticles(pendingArticles);
+
+            // Filter to include articles with status 'Rejected'
+            const rejected = fetchedArticles.filter(article => article.status === 'Rejected');
+            setRejectedArticles(rejected);
         } catch (error) {
             console.error('Error fetching articles:', error);
-            // You might want to show a notification to the user here
         }
-    };    
+    };
 
     const toggleSidePanel = () => {
         setSidePanelOpen(prevState => !prevState);
@@ -49,8 +53,7 @@ const SubmissionList: React.FC = () => {
 
     const headers = [
         { key: 'title', label: 'Title' },
-        { key: 'authors', label: 'Authors' },
-        { key: 'source', label: 'Source' },
+        { key: 'author', label: 'Author' },
         { key: 'yearOfPublication', label: 'Year of Publication' },
         { key: 'pages', label: 'Pages' },
         { key: 'volume', label: 'Volume' },
@@ -58,6 +61,16 @@ const SubmissionList: React.FC = () => {
         { key: 'claim', label: 'Claim' },
         { key: 'status', label: 'Status' },
         { key: 'actions', label: 'Actions' },
+    ];
+
+    const rejectedHeaders = [
+        { key: 'title', label: 'Title' },
+        { key: 'author', label: 'Author' },
+        { key: 'yearOfPublication', label: 'Year of Publication' },
+        { key: 'pages', label: 'Pages' },
+        { key: 'volume', label: 'Volume' },
+        { key: 'doi', label: 'DOI' },
+        { key: 'claim', label: 'Claim' },
     ];
 
     const handleStatusChange = useCallback((_id: string, newStatus: 'Approved' | 'Rejected') => {
@@ -94,7 +107,10 @@ const SubmissionList: React.FC = () => {
             console.error('Error submitting changes:', error);
         }
     };
-    
+
+    const toggleShowRejected = () => {
+        setShowRejected(prev => !prev);
+    };
     
     return (
         <div className={styles.container}>
@@ -131,6 +147,24 @@ const SubmissionList: React.FC = () => {
             <button onClick={handleSubmit} className={styles.sendButton} disabled={Object.keys(tempStatus).length === 0}>
                 Submit Changes
             </button>
+
+            {/* Button to show/hide rejected articles */}
+            <button onClick={toggleShowRejected} className={styles.showRejectedButton}>
+                {showRejected ? 'Hide Rejected Articles' : 'Show Rejected Articles'}
+            </button>
+
+            {/* Conditionally render rejected articles table */}
+            {showRejected && (
+                <div className={styles.rejectedArticlesTable}>
+                    <h2>Rejected Articles</h2>
+                    <SortableTable
+                        headers={rejectedHeaders}
+                        data={rejectedArticles.map(article => ({
+                            ...article,
+                        }))}
+                    />
+                </div>
+            )}
         </div>
     );
 };

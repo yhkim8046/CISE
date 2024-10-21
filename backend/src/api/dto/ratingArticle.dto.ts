@@ -5,7 +5,8 @@ export class RatingArticleDto {
   @Min(0, { message: 'Rating cannot be less than 0.' })
   @Max(5, { message: 'Rating cannot be more than 5.' })
   rating: number;
-
+  value: number;
+  
   ratingCounter: number;
   totalRating: number;
   averageRating: number;

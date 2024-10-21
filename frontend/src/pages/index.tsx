@@ -3,34 +3,37 @@ import { useRouter } from 'next/router';
 import Image from 'next/image';
 import SortableTable from '../components/table/SortableTable';
 import SidePanel from '../components/nav/SidePanel';
+import Rating from '../components/Rating'; // Import the Rating component
 import indexStyles from '../styles/index.module.scss';
 import sidePanelStyles from '../styles/sidepanel.module.scss';
 import searchIcon from '../images/search.png';
 import { useUserType } from '../context/userType';
 
-// Define the interface for the articles
 interface ArticlesInterface {
-    id: string; // Assuming this matches the MongoDB ObjectId
+    _id: string; 
     title: string;
-    author: string; // Renamed to match your data structure
-    yearOfPublication: number; // Changed to match the SQL field
+    author: string;
+    yearOfPublication: number;
     doi: string;
     pages: number;
     claim: string;
     typeOfResearch: string;
     typeOfParticipant: string;
-    evidence?: string; // Assuming 'evidence' may not always be present
+    evidence?: string;
+    rating?: number; 
+    totalRatings: number; // Add this field
+    averageRating: number; // Add this field
 }
 
-const IndexPage: React.FC = () => {
+const Index: React.FC = () => {
     const { userType } = useUserType();
     const [isSidePanelOpen, setSidePanelOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [articles, setArticles] = useState<ArticlesInterface[]>([]);
-    const [loading, setLoading] = useState(true); // Loading state
-    const [error, setError] = useState<string | null>(null); // Error state
-    const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence']); // Columns to display
-
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence', 'rating']);
+    
     const router = useRouter();
 
     const headers: { key: keyof ArticlesInterface; label: string }[] = [
@@ -43,9 +46,10 @@ const IndexPage: React.FC = () => {
         { key: 'typeOfResearch', label: 'Type' },
         { key: 'typeOfParticipant', label: 'Participant' },
         { key: 'evidence', label: 'Evidence' },
+        { key: 'rating', label: 'Rating' }, 
+        { key: 'averageRating', label: 'Average Rating' }, // Add Average Rating header
     ];
 
-    // Fetch articles from the database
     useEffect(() => {
         const fetchArticles = async () => {
             setLoading(true);
@@ -86,7 +90,6 @@ const IndexPage: React.FC = () => {
         setSearchTerm(event.target.value);
     };
 
-    // Filter articles based on the search term
     const filteredArticles = articles.filter(article =>
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         article.author.toLowerCase().includes(searchTerm.toLowerCase())
@@ -98,15 +101,35 @@ const IndexPage: React.FC = () => {
         );
     };
 
-    if (loading) return <div className={indexStyles.loading}>Loading articles...</div>; // Loading state
-    if (error) return <div className={indexStyles.error}>Error: {error}</div>; // Error state
+    const handleRatingChange = async (articleId: string, newRating: number) => {
+        try {
+            await updateArticleRating(articleId, newRating);
+            // Optionally, you might want to refresh the articles or update local state here
+        } catch (error) {
+            console.error("Error updating rating:", error);
+        }
+    };
+
+    async function updateArticleRating(articleId: string, newRating: number) {
+        const response = await fetch(`http://localhost:8082/api/articles/${articleId}/rate`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ rating: newRating }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update article rating');
+        }
+    }
+
+    if (loading) return <div className={indexStyles.loading}>Loading articles...</div>;
+    if (error) return <div className={indexStyles.error}>Error: {error}</div>;
 
     return (
         <div className={indexStyles.pageContainer}>
-            {/* Side Panel */}
             {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} />}
-
-            {/* Main Content */}
             <div className={`${indexStyles.mainContent} ${isSidePanelOpen ? indexStyles.openSidePanel : ''}`}>
                 <div className={indexStyles.headerContainer}>
                     <h1>Articles</h1>
@@ -139,7 +162,6 @@ const IndexPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Column Selection */}
                 <div className={indexStyles.columnSelection}>
                     {headers.map(header => (
                         <label key={header.key}>
@@ -153,16 +175,24 @@ const IndexPage: React.FC = () => {
                     ))}
                 </div>
 
-                {/* Articles Table */}
                 <SortableTable 
                     headers={headers.filter(header => visibleColumns.includes(header.key))} 
-                    data={filteredArticles} 
+                    data={filteredArticles.map(article => ({
+                        ...article,
+                        rating: (
+                            <Rating 
+                                articleId={article._id}
+                                currentRating={article.rating || 0}
+                                totalRatings={article.totalRatings || 0}
+                                onRatingChange={handleRatingChange} rating={0}                            />
+                        ),
+                        averageRating: article.totalRatings > 0 ? (article.rating || 0) / article.totalRatings : 0 
+                    }))} 
                     searchTerm={searchTerm} 
                     showActions={false} 
                 />
             </div>
 
-            {/* Button to toggle side panel */}
             <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>
                 {isSidePanelOpen ? '' : ''}
             </button>
@@ -170,4 +200,4 @@ const IndexPage: React.FC = () => {
     );
 };
 
-export default IndexPage;
+export default Index;

@@ -7,7 +7,7 @@ import sidePanelStyles from '../styles/sidepanel.module.scss';
 interface Article {
     _id: string;
     title: string;
-    authors: string;
+    author: string;
     source: string;
     yearOfPublication: number;
     pages?: number;
@@ -114,8 +114,7 @@ const ApprovalList: React.FC = () => {
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Authors</th>
-                            <th>Source</th>
+                            <th>Author</th>
                             <th>Year of Publication</th>
                             <th>Pages</th>
                             <th>Volume</th>
@@ -129,8 +128,7 @@ const ApprovalList: React.FC = () => {
                         {articles.map(article => (
                             <tr key={article._id}>
                                 <td>{article.title}</td>
-                                <td>{article.authors}</td>
-                                <td>{article.source}</td>
+                                <td>{article.author}</td>
                                 <td>{article.yearOfPublication}</td>
                                 <td>{article.pages}</td>
                                 <td>{article.volume}</td>
