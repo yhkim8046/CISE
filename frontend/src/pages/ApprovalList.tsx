@@ -7,7 +7,7 @@ import sidePanelStyles from '../styles/sidepanel.module.scss';
 interface Article {
     _id: string;
     title: string;
-    author: string;
+    authors: string;
     source: string;
     yearOfPublication: number;
     pages?: number;
@@ -92,6 +92,9 @@ const ApprovalList: React.FC = () => {
             const data = await response.json(); // Parse the JSON response
             console.log('Successfully submitted articles:', data);
 
+            // Update the articles state to remove submitted articles
+            setArticles(prev => prev.filter(article => !articlesToSubmit.some(submitted => submitted._id === article._id)));
+
             // Reset the selected articles and evidence inputs here
             setSelectedArticles({});
             setEvidenceInput({});
@@ -114,7 +117,8 @@ const ApprovalList: React.FC = () => {
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Author</th>
+                            <th>Authors</th>
+                            <th>Source</th>
                             <th>Year of Publication</th>
                             <th>Pages</th>
                             <th>Volume</th>
@@ -128,7 +132,8 @@ const ApprovalList: React.FC = () => {
                         {articles.map(article => (
                             <tr key={article._id}>
                                 <td>{article.title}</td>
-                                <td>{article.author}</td>
+                                <td>{article.authors}</td>
+                                <td>{article.source}</td>
                                 <td>{article.yearOfPublication}</td>
                                 <td>{article.pages}</td>
                                 <td>{article.volume}</td>

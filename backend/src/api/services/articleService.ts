@@ -9,6 +9,26 @@ import { Moderator } from '../models/moderator.schema';
 
 @Injectable()
 export class ArticleService {
+  async submitReviewedArticles(
+    articles: { _id: string; evidence: string }[],
+  ): Promise<void> {
+    // Loop over each article and update it with the provided evidence
+    for (const article of articles) {
+      await this.articleModel
+        .findByIdAndUpdate(
+          article._id, // Find the article by its ID
+          {
+            $set: {
+              evidence: article.evidence, // Set the evidence field with the new value
+              status: 'Submitted', // Optionally update the status to 'Reviewed' or another appropriate status
+            },
+          },
+          { new: true }, // Return the updated article
+        )
+        .exec(); // Execute the query
+    }
+  }
+
   constructor(
     @InjectModel(Article.name) private articleModel: Model<ArticleDocument>,
     @InjectModel(Moderator.name) private moderatorModel: Model<Moderator>,
@@ -49,14 +69,6 @@ export class ArticleService {
     return article;
   }
 
-  async findById(articleId: string): Promise<Article> {
-    const article = await this.articleModel.findById(articleId).exec();
-    if (!article) {
-        throw new NotFoundException('Article not found');
-    }
-    return article;
-}
-
   async delete(_id: string): Promise<Article | null> {
     const deletedArticle = await this.articleModel
       .findByIdAndDelete(_id)
@@ -93,24 +105,17 @@ export class ArticleService {
     return this.articleModel.find({ status: { $in: ['Rejected'] } }).exec();
   }
 
-  // Rating an article and updating average rating
   async ratingArticle(_id: string, ratingArticleDto: RatingArticleDto) {
     const article = await this.articleModel.findById(_id).exec();
 
     if (!article) {
-        throw new NotFoundException('Article not found');
+      throw new NotFoundException('Article not found');
     }
 
-    // Update total ratings and calculate new average
-    const newTotalRatings = article.totalRating + 1; // Increment total ratings
-    const newAverageRating = 
-        (article.averageRating * article.totalRating + ratingArticleDto.rating) / newTotalRatings;
+    article.rating = ratingArticleDto.rating;
 
-    article.totalRating = newTotalRatings; 
-    article.averageRating = newAverageRating; 
-
-    return article.save(); // Return the updated article
-}
+    return article.save();
+  }
 
   async storeRejectedArticles(rejectedArticle: Article): Promise<Article> {
     return this.articleModel.create(rejectedArticle);
@@ -133,43 +138,4 @@ export class ArticleService {
     await Promise.all(updatePromises); // Wait for all updates to complete
     return { message: 'Batch update successful' }; // Return success message
   }
-
-  async submitReviewedArticles(
-    articles: { _id: string; evidence: string }[],
-  ): Promise<void> {
-    // Loop over each article and update it with the provided evidence
-    for (const article of articles) {
-      await this.articleModel
-        .findByIdAndUpdate(
-          article._id, // Find the article by its ID
-          {
-            $set: {
-              evidence: article.evidence, // Set the evidence field with the new value
-              status: 'Submitted', // Optionally update the status to 'Reviewed' or another appropriate status
-            },
-          },
-          { new: true }, // Return the updated article
-        )
-        .exec(); // Execute the query
-    }
-  }
-
-  async updateRating(articleId: string, newRating: number): Promise<ArticleDocument> {
-    const article = await this.articleModel.findById(articleId);
-    if (!article) {
-        throw new NotFoundException('Article not found');
-    }
-
-    // Update total and average ratings
-    article.totalRating += newRating;
-    article.ratingCounter += 1;
-    article.averageRating = article.totalRating / article.ratingCounter;
-
-    // Save the updated article
-    await article.save();
-
-    return article;
 }
-}
-
-

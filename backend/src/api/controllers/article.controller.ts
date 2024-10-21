@@ -10,7 +10,6 @@ import {
   Put,
   Patch,
   Query,
-  NotFoundException,
 } from '@nestjs/common';
 import { ArticleService } from '../services/articleService';
 import { CreateArticleDto } from '../dto/createArticle.dto';
@@ -138,15 +137,6 @@ export class ArticleController {
     };
   }
 
-  @Post('/submitReviewed')
-  @Patch('/submit-reviewed-articles')
-  async submitReviewedArticles(
-    @Body() articles: { _id: string; evidence: string }[],
-  ): Promise<{ message: string }> {
-    await this.articleService.submitReviewedArticles(articles);
-    return { message: 'Reviewed articles submitted successfully' };
-  }
-
   // Get approved articles
   @Get('/approved')
   async getApprovedArticles(): Promise<Article[]> {
@@ -205,16 +195,35 @@ export class ArticleController {
     @Body() updates: UpdateStatusDto[],
   ): Promise<{ message: string }> {
     console.log('Batch update requested with:', updates); // Debug log
-    await this.articleService.batchUpdateStatus(updates);
+    await this.articleService.batchUpdateStatus(updates); // Ensure service handles the update logic
     return { message: 'Batch update successful' };
   }
 
-  // Rating an Article
-  @Patch('/:_id/rate')
-async rateArticle(
+  @Post('/submitReviewed')
+  async submitReviewed(
+    @Body() body: { articles: { _id: string; evidence: string }[] },
+  ): Promise<{ message: string }> {
+    try {
+      // Pass the articles data to the service layer
+      await this.articleService.submitReviewedArticles(body.articles);
+      return { message: 'Articles successfully submitted and updated' };
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Failed to submit reviewed articles',
+          message: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Patch('/:_id/rate') // New endpoint for rating
+  async rateArticle(
     @Param('_id') _id: string,
     @Body() ratingArticleDto: RatingArticleDto,
-): Promise<Article> {
+  ): Promise<Article> {
     return this.articleService.ratingArticle(_id, ratingArticleDto);
-}
+  }
 }
