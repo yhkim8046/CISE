@@ -1,26 +1,31 @@
 import React from 'react';
-import { useRouter } from 'next/router'; // Import useRouter for navigation
+import { useRouter } from 'next/router';
 import styles from './Nav.module.scss';
-import { useUserType } from '../../context/userType'; // Import context
+import { useUserType } from '../../context/userType';
 
-const SidePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+interface SidePanelProps {
+    onToggleEditMode: () => void; // Add the prop for toggling edit mode
+    onClose: () => void; // Existing close prop
+}
+
+const SidePanel: React.FC<SidePanelProps> = ({}) => {
     const router = useRouter();
-    const { userType } = useUserType(); // Get the user type from context
+    const { userType } = useUserType();
 
     const handleHomeClick = () => {
-        router.push('/'); // Navigate to the index page (home)
+        router.push('/'); 
     };
 
     const handleSubmissionForm = () => {
-        router.push('/SubmissionForm'); // Navigate to the index page (home)
+        router.push('/SubmissionForm'); 
     };
 
     const handleSubmissionList = () => {
-        router.push('/SubmissionList'); // Navigate to the Submission List page
+        router.push('/SubmissionList'); 
     };
 
     const handleApprovalList = () => {
-        router.push('/ApprovalList'); // Navigate to the Submission List page
+        router.push('/ApprovalList'); 
     };
 
     return (
@@ -33,24 +38,15 @@ const SidePanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <span className={styles.tooltip}>Submit Article</span>
             </button>
 
-            {/* Show button only for 'moderator_user' and 'admin_user' */}
             {(userType === 'moderator_user' || userType === 'admin_user') && (
                 <button className={styles.queueButton} onClick={handleSubmissionList}>
                     <span className={styles.tooltip}>Article Submission List</span>
                 </button>
             )}
 
-            {/* Show button only for 'analyst_user' and 'admin_user' */}
             {(userType === 'analyst_user' || userType === 'admin_user') && (
                 <button className={styles.approvalListButton} onClick={handleApprovalList}>
                     <span className={styles.tooltip}>Article Approval List</span>
-                </button>
-            )}
-
-            {/* Show button only for 'admin_user' */}
-            {(userType === 'admin_user') && (
-                <button className={styles.settingsButton} onClick={handleApprovalList}>
-                    <span className={styles.tooltip}>Configure</span>
                 </button>
             )}
         </div>
