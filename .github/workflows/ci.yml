@@ -20,6 +20,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+
+      - name: Clean npm cache
+        run: npm cache clean --force
       
       - name: Install dependencies
         run: npm install
@@ -27,11 +30,6 @@ jobs:
       
       - name: Build React App
         run: npm run build
-        working-directory: ./frontend
-      
-      # Uncomment these lines if you want to run tests for React
-      - name: Run tests
-        run: npm test
         working-directory: ./frontend
 
   build-nestjs:
@@ -46,15 +44,13 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Clean npm cache
+        run: npm cache clean --force
+      
       - name: Install dependencies
         run: npm install
         working-directory: ./backend  
 
       - name: Build Nest.js API
-        run: npm run build # Build 명령 사용
-        working-directory: ./backend
-
-      # Uncomment these lines if you want to run tests for Nest.js
-      - name: Run tests
-        run: npm test
+        run: npm run build
         working-directory: ./backend

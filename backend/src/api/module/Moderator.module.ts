@@ -1,7 +1,7 @@
 // moderator.module.ts
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ModeratorController } from '../controllers/moderator.controller';
+import { ModeratorController } from '../controllers/moderator.Controller';
 import { ModeratorService } from '../services/moderatorService';
 import { Moderator, ModeratorSchema } from '../models/moderator.schema';
 
