@@ -32,7 +32,7 @@ const ApprovalList: React.FC = () => {
         const fetchArticles = async () => {
             setLoading(true); // Set loading state
             try {
-                const response = await fetch('https://cise-backend-nine.vercel.app/api/articles'); // Fetch all articles from the backend
+                const response = await fetch('http://localhost:8082/api/articles'); // Fetch all articles from the backend
                 if (!response.ok) {
                     throw new Error('Failed to fetch articles'); // Handle fetch error
                 }
@@ -82,7 +82,7 @@ const ApprovalList: React.FC = () => {
         }
 
         try {
-            const response = await fetch('https://cise-backend-nine.vercel.app/articles/submitReviewed', {
+            const response = await fetch('http://localhost:8082/api/articles/submitReviewed', {
                 method: 'POST', // Set request method to POST
                 headers: {
                     'Content-Type': 'application/json', // Set content type to JSON
