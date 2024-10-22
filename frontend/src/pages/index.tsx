@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Image from 'next/image';
 import SortableTable from '../components/table/SortableTable';
 import SidePanel from '../components/nav/SidePanel';
-import Rating from '../components/Rating'; // Import the Rating component
+import Rating from '../components/Rating';
 import indexStyles from '../styles/index.module.scss';
 import sidePanelStyles from '../styles/sidepanel.module.scss';
 import searchIcon from '../images/search.png';
@@ -13,7 +13,7 @@ interface ArticlesInterface {
     _id: string; 
     title: string;
     author: string;
-    yearOfPublication: number | null; // Allow null for yearOfPublication
+    yearOfPublication: number | null;
     doi: string;
     pages: number;
     claim: string;
@@ -35,6 +35,8 @@ const Index: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence', 'rating', 'ratingCounter', 'averageRating', 'submittedDate']);
+    const [savedQueries, setSavedQueries] = useState<string[]>([]); // State for saved queries
+    const [dropdownOpen, setDropdownOpen] = useState(false); // State for dropdown visibility
 
     const router = useRouter();
 
@@ -92,14 +94,21 @@ const Index: React.FC = () => {
         setSearchTerm(event.target.value);
     };
 
+    // Function to save the current search term
+    const saveSearchQuery = () => {
+        if (searchTerm && !savedQueries.includes(searchTerm)) {
+            setSavedQueries(prevQueries => [...prevQueries, searchTerm]);
+        }
+    };
+
     const filteredArticles = articles.filter(article =>
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (article.author && article.author.toLowerCase().includes(searchTerm.toLowerCase())) ||
         article.typeOfResearch.toLowerCase().includes(searchTerm.toLowerCase()) ||
         article.typeOfParticipant.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (article.submittedDate && article.submittedDate.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (article.yearOfPublication !== null && article.yearOfPublication.toString().includes(searchTerm)) || // Added null check
-        (article.evidence && article.evidence.toLowerCase().includes(searchTerm.toLowerCase())) // Check for evidence
+        (article.yearOfPublication !== null && article.yearOfPublication.toString().includes(searchTerm)) ||
+        (article.evidence && article.evidence.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     const toggleColumn = (column: string) => {
@@ -138,6 +147,11 @@ const Index: React.FC = () => {
         return await response.json();
     }
 
+    // Toggle dropdown visibility
+    const toggleDropdown = () => {
+        setDropdownOpen(!dropdownOpen);
+    };
+
     if (loading) return <div className={indexStyles.loading}>Loading articles...</div>;
     if (error) return <div className={indexStyles.error}>Error: {error}</div>;
 
@@ -155,9 +169,28 @@ const Index: React.FC = () => {
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />
-                        <button className={indexStyles.searchButton}>
+                        <button className={indexStyles.searchButton} onClick={saveSearchQuery}>
                             <Image src={searchIcon} alt="Search" width={16} height={16} />
                         </button>
+                        {/* Saved Queries Dropdown */}
+                        <div className={indexStyles.savedQueriesDropdown}>
+                            <button className={indexStyles.dropdownButton} onClick={toggleDropdown}>
+                                Saved Queries
+                            </button>
+                            {dropdownOpen && (
+                                <ul className={indexStyles.dropdownList}>
+                                    {savedQueries.length > 0 ? (
+                                        savedQueries.map((query, index) => (
+                                            <li key={index} onClick={() => setSearchTerm(query)} style={{ cursor: 'pointer' }}>
+                                                {query}
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li>No saved queries</li>
+                                    )}
+                                </ul>
+                            )}
+                        </div>
                     </div>
                     <div className={indexStyles.buttonContainer}>
                         {(userType === 'moderator_user' || userType === 'admin_user') && (
@@ -193,7 +226,9 @@ const Index: React.FC = () => {
                     headers={headers.filter(header => visibleColumns.includes(header.key))} 
                     data={filteredArticles.map(article => ({
                         ...article,
+                        submittedDate: new Date(article.submittedDate).toLocaleDateString(),
                         rating: (
+                            
                             <Rating 
                                 articleId={article._id}
                                 currentRating={article.rating || 0}
@@ -202,16 +237,9 @@ const Index: React.FC = () => {
                                 onRatingChange={handleRatingChange} 
                             />
                         ),
-                        submittedDate: article.submittedDate.split('T')[0] // Display only date part
                     }))} 
-                    searchTerm={searchTerm} 
-                    showActions={false} 
                 />
             </div>
-
-            <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>
-                {isSidePanelOpen ? '' : ''}
-            </button>
         </div>
     );
 };

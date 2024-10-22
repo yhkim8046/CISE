@@ -121,3 +121,38 @@
     align-items: center; /* Center items vertically */
     font-size: 14px; /* Font size for labels */
 }
+
+.savedQueriesDropdown {
+    position: relative;
+    display: inline-block;
+
+    .dropdownButton {
+        margin-left: 8px; // Adjust margin as needed
+        background-color: #f0f0f0; // Style for the button
+        border: 1px solid #ccc;
+        padding: 8px;
+        cursor: pointer;
+    }
+
+    .dropdownList {
+        position: absolute;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-top: 4px;
+        padding: 0;
+        list-style: none;
+        z-index: 1000; // Ensure dropdown is above other elements
+        width: 100%; // Optional: full width
+
+        li {
+            padding: 8px;
+            cursor: pointer;
+
+            &:hover {
+                background-color: #f0f0f0; // Highlight on hover
+            }
+        }
+    }
+}
+
