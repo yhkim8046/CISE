@@ -50,7 +50,7 @@ jobs:
         working-directory: ./backend  
 
       - name: Build Nest.js API
-        run: npm run build
+        run: npm start
         working-directory: ./backend
 
       - name: Run tests
