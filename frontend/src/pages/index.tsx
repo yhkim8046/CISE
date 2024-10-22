@@ -21,8 +21,10 @@ interface ArticlesInterface {
     typeOfParticipant: string;
     evidence?: string;
     rating?: number; 
-    totalRatings: number; // Add this field
-    averageRating: number; // Add this field
+    totalRating: number; 
+    averageRating: number; 
+    ratingCounter: number; 
+    submittedDate: string; 
 }
 
 const Index: React.FC = () => {
@@ -32,7 +34,7 @@ const Index: React.FC = () => {
     const [articles, setArticles] = useState<ArticlesInterface[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence', 'rating']);
+    const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence', 'rating', 'ratingCounter', 'averageRating']);
     
     const router = useRouter();
 
@@ -46,26 +48,28 @@ const Index: React.FC = () => {
         { key: 'typeOfResearch', label: 'Type' },
         { key: 'typeOfParticipant', label: 'Participant' },
         { key: 'evidence', label: 'Evidence' },
-        { key: 'rating', label: 'Rating' }, 
-        { key: 'averageRating', label: 'Average Rating' }, // Add Average Rating header
+        { key: 'submittedDate', label: 'Submission Date' },
+        { key: 'rating', label: 'Rating' },
     ];
+    
 
     useEffect(() => {
-        const fetchArticles = async () => {
-            setLoading(true);
-            try {
-                const response = await fetch('http://localhost:8082/api/articles/');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch articles');
-                }
-                const data: ArticlesInterface[] = await response.json();
-                setArticles(data);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'An error occurred');
-            } finally {
-                setLoading(false);
-            }
-        };
+        // Ensure submissionDate is fetched in your API call
+const fetchArticles = async () => {
+    setLoading(true);
+    try {
+        const response = await fetch('http://localhost:8082/api/articles/');
+        if (!response.ok) {
+            throw new Error('Failed to fetch articles');
+        }
+        const data: ArticlesInterface[] = await response.json();
+        setArticles(data);
+    } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+        setLoading(false);
+    }
+};
 
         fetchArticles();
     }, []);
@@ -92,7 +96,7 @@ const Index: React.FC = () => {
 
     const filteredArticles = articles.filter(article =>
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        article.author.toLowerCase().includes(searchTerm.toLowerCase())
+        (article.author && article.author.toLowerCase().includes(searchTerm.toLowerCase())) // Check if author is defined
     );
 
     const toggleColumn = (column: string) => {
@@ -103,8 +107,15 @@ const Index: React.FC = () => {
 
     const handleRatingChange = async (articleId: string, newRating: number) => {
         try {
-            await updateArticleRating(articleId, newRating);
-            // Optionally, you might want to refresh the articles or update local state here
+            const updatedArticle = await updateArticleRating(articleId, newRating);
+            // Update the local state with the new rating data
+            setArticles(prevArticles =>
+                prevArticles.map(article =>
+                    article._id === articleId
+                        ? { ...article, rating: newRating, totalRating: article.totalRating + newRating, ratingCounter: article.ratingCounter + 1, averageRating: (article.totalRating + newRating) / (article.ratingCounter + 1) }
+                        : article
+                )
+            );
         } catch (error) {
             console.error("Error updating rating:", error);
         }
@@ -112,16 +123,17 @@ const Index: React.FC = () => {
 
     async function updateArticleRating(articleId: string, newRating: number) {
         const response = await fetch(`http://localhost:8082/api/articles/${articleId}/rate`, {
-            method: 'PUT',
+            method: 'PATCH', // Change from PUT to PATCH
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ rating: newRating }),
+            body: JSON.stringify({ rating: newRating }), // Send only the rating for now
         });
-
+    
         if (!response.ok) {
             throw new Error('Failed to update article rating');
         }
+        return await response.json(); // Assuming the server returns the updated article
     }
 
     if (loading) return <div className={indexStyles.loading}>Loading articles...</div>;
@@ -176,21 +188,24 @@ const Index: React.FC = () => {
                 </div>
 
                 <SortableTable 
-                    headers={headers.filter(header => visibleColumns.includes(header.key))} 
-                    data={filteredArticles.map(article => ({
-                        ...article,
-                        rating: (
-                            <Rating 
-                                articleId={article._id}
-                                currentRating={article.rating || 0}
-                                totalRatings={article.totalRatings || 0}
-                                onRatingChange={handleRatingChange} rating={0}                            />
-                        ),
-                        averageRating: article.totalRatings > 0 ? (article.rating || 0) / article.totalRatings : 0 
-                    }))} 
-                    searchTerm={searchTerm} 
-                    showActions={false} 
-                />
+    headers={headers.filter(header => visibleColumns.includes(header.key))} 
+    data={filteredArticles.map(article => ({
+        ...article,
+        rating: (
+            <Rating 
+                articleId={article._id}
+                currentRating={article.rating || 0}
+                ratingCounter={article.ratingCounter || 0} // Pass ratingCounter
+                averageRating={article.averageRating || 0} // Pass average rating
+                onRatingChange={handleRatingChange} 
+            />
+        ),
+        submittedDate: new Date(article.submittedDate).toLocaleDateString() // Format the date
+    }))} 
+    searchTerm={searchTerm} 
+    showActions={false} 
+/>
+
             </div>
 
             <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>

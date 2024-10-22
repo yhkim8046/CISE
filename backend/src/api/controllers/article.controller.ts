@@ -10,6 +10,9 @@ import {
   Put,
   Patch,
   Query,
+  NotFoundException,
+  InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { ArticleService } from '../services/articleService';
 import { CreateArticleDto } from '../dto/createArticle.dto';
@@ -20,6 +23,7 @@ import { RatingArticleDto } from '../dto/ratingArticle.dto';
 
 @Controller('api/articles')
 export class ArticleController {
+  articleModel: any;
   constructor(private readonly articleService: ArticleService) {}
 
   @Get('/test')
@@ -219,11 +223,16 @@ export class ArticleController {
     }
   }
 
-  @Patch('/:_id/rate') // New endpoint for rating
-  async rateArticle(
-    @Param('_id') _id: string,
-    @Body() ratingArticleDto: RatingArticleDto,
-  ): Promise<Article> {
-    return this.articleService.ratingArticle(_id, ratingArticleDto);
-  }
+  @Patch(':id/rate')
+    async updateRating(@Param('id') id: string, @Body() ratingArticleDto: RatingArticleDto) {
+        const { rating } = ratingArticleDto; // Corrected to use ratingArticleDto
+
+        // Validate the rating value (ensure it's between 1 and 5)
+        if (rating === undefined || rating < 1 || rating > 5) {
+            throw new BadRequestException('Rating must be an integer between 1 and 5');
+        }
+
+        // Call the service to update the article rating
+        return this.articleService.ratingArticle(id, ratingArticleDto);
+    }
 }

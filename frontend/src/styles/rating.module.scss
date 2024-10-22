@@ -3,14 +3,32 @@
 .ratingContainer {
     display: flex;
     cursor: pointer;
+    
+}
+
+.stars {
+    display: flex; /* Makes star buttons display in a row */
+    justify-content: flex-start; /* Aligns stars to the start */
+    padding-right: 15px;
+    padding-left: 5px;
 }
 
 .star {
     font-size: 24px; /* Adjust size as needed */
     color: lightgray; /* Default star color */
     transition: color 0.2s;
-}
+    background: none; /* Remove any background */
+    border: none; /* Remove button outline */
+    padding: 0; /* Remove padding */
+    margin: 0 2px; /* Add some spacing between stars */
+    outline: none; /* Remove focus outline */
+    /* Remove default button style */
+    &:hover {
+        color: gold; /* Highlight stars on hover */
+    }
 
-.star.filled {
-    color: gold; /* Color for filled stars */
+    /* Ensure that filled stars remain gold */
+    &.filled {
+        color: gold; /* Color for filled stars */
+    }
 }

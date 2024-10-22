@@ -35,24 +35,25 @@ const SortableTable: React.FC<SortableTableProps> = ({
     }, [data, headers, searchTerm]);
 
     // Sorting the filtered data
-    const sortedData = useMemo(() => {
-        const sortableItems = [...filteredData];
-        if (sortConfig) {
-            sortableItems.sort((a, b) => {
-                const aValue = a[sortConfig.key];
-                const bValue = b[sortConfig.key];
+const sortedData = useMemo(() => {
+    const sortableItems = [...filteredData];
+    if (sortConfig) {
+        sortableItems.sort((a, b) => {
+            const aValue = sortConfig.key === 'submissionDate' ? new Date(a[sortConfig.key]) : a[sortConfig.key];
+            const bValue = sortConfig.key === 'submissionDate' ? new Date(b[sortConfig.key]) : b[sortConfig.key];
 
-                if (aValue < bValue) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (aValue > bValue) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-                return 0;
-            });
-        }
-        return sortableItems;
-    }, [filteredData, sortConfig]);
+            if (aValue < bValue) {
+                return sortConfig.direction === 'ascending' ? -1 : 1;
+            }
+            if (aValue > bValue) {
+                return sortConfig.direction === 'ascending' ? 1 : -1;
+            }
+            return 0;
+        });
+    }
+    return sortableItems;
+}, [filteredData, sortConfig]);
+
 
     // Handle sorting request
     const requestSort = (key: string) => {

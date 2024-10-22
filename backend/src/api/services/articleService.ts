@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Article, ArticleDocument } from '../models/article.schema';
@@ -112,10 +112,25 @@ export class ArticleService {
       throw new NotFoundException('Article not found');
     }
 
-    article.rating = ratingArticleDto.rating;
+    const { rating } = ratingArticleDto;
+
+    // Validate the rating value (ensure it's an integer and between 1 and 5)
+    if (rating === undefined || rating < 1 || rating > 5) {
+      throw new BadRequestException('Rating must be an integer between 1 and 5');
+    }
+
+    // Initialize ratingCounter and totalRating if they don't exist
+    article.ratingCounter = article.ratingCounter || 0;
+    article.totalRating = article.totalRating || 0;
+
+    // Update rating values
+    article.ratingCounter += 1; // Increment rating count
+    article.totalRating += rating; // Update total rating
+    article.averageRating = article.totalRating / article.ratingCounter; // Calculate new average rating
 
     return article.save();
   }
+
 
   async storeRejectedArticles(rejectedArticle: Article): Promise<Article> {
     return this.articleModel.create(rejectedArticle);
@@ -138,4 +153,6 @@ export class ArticleService {
     await Promise.all(updatePromises); // Wait for all updates to complete
     return { message: 'Batch update successful' }; // Return success message
   }
+
 }
+
