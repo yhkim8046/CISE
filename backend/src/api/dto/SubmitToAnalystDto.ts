@@ -1,6 +1,6 @@
 import { IsArray, ValidateNested } from 'class-validator'; // Import validation decorators
 import { Type } from 'class-transformer'; // Import Type for transforming plain objects
-import { Article } from '../models/Article.Schema'; // Adjust the path as necessary
+import { Article } from '../models/article.schema'; // Adjust the path as necessary
 
 export class SubmitToAnalystDto {
   @IsArray() // Validate that the articles property is an array
