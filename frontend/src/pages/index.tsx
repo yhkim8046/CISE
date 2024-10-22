@@ -37,6 +37,8 @@ const Index: React.FC = () => {
     const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence', 'rating', 'ratingCounter', 'averageRating', 'submittedDate']); // State for visible columns in the table
     const [savedQueries, setSavedQueries] = useState<string[]>([]); // State for saved queries
     const [dropdownOpen, setDropdownOpen] = useState(false); // State for dropdown visibility
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editableArticle, setEditableArticle] = useState<ArticlesInterface | null>(null);
 
     const router = useRouter();
 
@@ -53,6 +55,10 @@ const Index: React.FC = () => {
         { key: 'submittedDate', label: 'Submission Date' },
         { key: 'rating', label: 'Rating' },
     ];
+
+    const toggleEditMode = () => {
+        setIsEditMode((prev) => !prev);
+      };
 
     // Fetch articles from the API on component mount
     useEffect(() => {
@@ -106,6 +112,35 @@ const Index: React.FC = () => {
             setSavedQueries(prevQueries => [...prevQueries, searchTerm]);
         }
     };
+// Function to save the edited article
+const saveEditedArticle = async (event: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
+    event.preventDefault(); // Prevent default button behavior
+    if (!editableArticle) return;
+
+    try {
+        const response = await fetch(`http://localhost:8082/api/articles/${editableArticle._id}`, {
+            method: 'PUT', // Assuming you are updating the article
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(editableArticle), // Send the edited article data
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save the edited article'); // Handle error
+        }
+
+        const updatedArticle = await response.json(); // Get the updated article from the response
+        setArticles(prevArticles =>
+            prevArticles.map(article =>
+                article._id === updatedArticle._id ? updatedArticle : article // Update the article in state
+            )
+        );
+        setEditableArticle(null); // Clear the editable article state
+    } catch (error) {
+        console.error("Error saving article:", error); // Log any errors
+    }
+};
 
     // Filter articles based on the search term
     const filteredArticles = articles.filter(article =>
@@ -140,6 +175,49 @@ const Index: React.FC = () => {
             console.error("Error updating rating:", error); // Log error if updating rating fails
         }
     };
+// Function to handle deleting an article
+const handleDelete = async (articleId: string) => {
+    const confirmed = confirm("Are you sure you want to delete this article?");
+    if (confirmed) {
+        try {
+            await deleteArticle(articleId);
+            setArticles(prevArticles => prevArticles.filter(article => article._id !== articleId));
+        } catch (error) {
+            console.error("Error deleting article:", error);
+        }
+    }
+};
+
+// Delete article from the server
+async function deleteArticle(articleId: string) {
+    const response = await fetch(`http://localhost:8082/api/articles/${articleId}`, {
+        method: 'DELETE',
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to delete article'); // Handle delete error
+    }
+}
+
+// Function to handle editing an article
+const handleEdit = (article: ArticlesInterface) => {
+    setEditableArticle(article);
+};
+// Update article on the server
+async function updateArticle(article: ArticlesInterface) {
+    const response = await fetch(`http://localhost:8082/api/articles/${article._id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(article),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to update article'); // Handle update error
+    }
+    return await response.json(); // Return updated article data
+}
 
     // Update article rating on the server
     async function updateArticleRating(articleId: string, newRating: number) {
@@ -168,97 +246,153 @@ const Index: React.FC = () => {
     if (error) return <div className={indexStyles.error}>Error: {error}</div>;
 
     return (
-        <div className={indexStyles.pageContainer}>
-            {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} />}
-            <div className={`${indexStyles.mainContent} ${isSidePanelOpen ? indexStyles.openSidePanel : ''}`}>
-            <div className={indexStyles.headerContainer}>
-    <h1>Articles</h1>
-    <div className={indexStyles.searchBarContainer}>
-        <input
-            type="text"
-            placeholder="Search articles..."
-            className={indexStyles.searchInput}
-            value={searchTerm}
-            onChange={handleSearchChange}
-        />
-        <button className={indexStyles.searchButton} onClick={saveSearchQuery}>
-            <Image src={searchIcon} alt="Search" width={16} height={16} />
-        </button>
-        {/* Saved Queries Dropdown */}
-        <div className={indexStyles.savedQueriesDropdown}>
-            <button className={indexStyles.dropdownButton} onClick={toggleDropdown}>
-                Saved Queries
-            </button>
-            {dropdownOpen && (
-                <ul className={indexStyles.dropdownList}>
-                    {savedQueries.length > 0 ? (
-                        savedQueries.map((query, index) => (
-                            <li key={index} onClick={() => setSearchTerm(query)} style={{ cursor: 'pointer' }}>
-                                {query}
-                            </li>
-                        ))
-                    ) : (
-                        <li>No saved queries</li>
-                    )}
-                </ul>
-            )}
-        </div>
-    </div>
-    <div className={indexStyles.buttonContainer}>
-        {(userType === 'moderator_user' || userType === 'admin_user') && (
-            <button className={indexStyles.moderatorButton} onClick={handleSubmissionList}>
-                Submission List
-            </button>
-        )}
-        {(userType === 'analyst_user' || userType === 'admin_user') && (
-            <button className={indexStyles.analystButton} onClick={handleApprovalList}>
-                Approval List
-            </button>
-        )}
-        <button className={indexStyles.submitButton} onClick={handleSubmit}>
-            Submit Article
-        </button>
-    </div>
-</div>
+            <div className={indexStyles.pageContainer}>
+                {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} onToggleEditMode={toggleEditMode} />}
 
-
-                <div className={indexStyles.columnSelection}>
-                    {headers.map(header => (
-                        <label key={header.key}>
+                <div className={`${indexStyles.mainContent} ${isSidePanelOpen ? indexStyles.openSidePanel : ''}`}>
+                    <div className={indexStyles.headerContainer}>
+                        <h1>Articles</h1>
+                        <div className={indexStyles.searchBarContainer}>
                             <input
-                                type="checkbox"
-                                checked={visibleColumns.includes(header.key)}
-                                onChange={() => toggleColumn(header.key)}
+                                type="text"
+                                placeholder="Search articles..."
+                                className={indexStyles.searchInput}
+                                value={searchTerm}
+                                onChange={handleSearchChange}
                             />
-                            {header.label}
-                        </label>
-                    ))}
+                            <button className={indexStyles.searchButton} onClick={saveSearchQuery}>
+                                <Image src={searchIcon} alt="Search" width={16} height={16} />
+                            </button>
+                            {/* Saved Queries Dropdown */}
+                            <div className={indexStyles.savedQueriesDropdown}>
+                                <button className={indexStyles.dropdownButton} onClick={toggleDropdown}>
+                                    Saved Queries
+                                </button>
+                                {dropdownOpen && (
+                                    <ul className={indexStyles.dropdownList}>
+                                        {savedQueries.length > 0 ? (
+                                            savedQueries.map((query, index) => (
+                                                <li key={index} onClick={() => setSearchTerm(query)} style={{ cursor: 'pointer' }}>
+                                                    {query}
+                                                </li>
+                                            ))
+                                        ) : (
+                                            <li>No saved queries</li>
+                                        )}
+                                    </ul>
+                                )}
+                            </div>
+                            {/* Editable article fields */}
+                            {editableArticle && (
+                                <div className={indexStyles.editContainer}>
+                                    <input
+                                        type="text"
+                                        value={editableArticle.title}
+                                        onChange={(e) => setEditableArticle({ ...editableArticle, title: e.target.value })}
+                                        placeholder="Edit Title"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={editableArticle.author}
+                                        onChange={(e) => setEditableArticle({ ...editableArticle, author: e.target.value })}
+                                        placeholder="Edit Author"
+                                    />
+                                    <input
+                                        type="number"
+                                        value={editableArticle.yearOfPublication || ''}
+                                        onChange={(e) => setEditableArticle({ ...editableArticle, yearOfPublication: parseInt(e.target.value) || null })}
+                                        placeholder="Edit Year of Publication"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={editableArticle.doi}
+                                        onChange={(e) => setEditableArticle({ ...editableArticle, doi: e.target.value })}
+                                        placeholder="Edit DOI"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={editableArticle.claim}
+                                        onChange={(e) => setEditableArticle({ ...editableArticle, claim: e.target.value })}
+                                        placeholder="Edit Claim"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={editableArticle.evidence}
+                                        onChange={(e) => setEditableArticle({ ...editableArticle, evidence: e.target.value })}
+                                        placeholder="Edit Evidence"
+                                    />
+                                    <button onClick={saveEditedArticle}>Save</button>
+                                    <button onClick={() => setEditableArticle(null)}>Cancel</button>
+                                </div>
+                            )}
+                        </div>
+                        <div className={indexStyles.buttonContainer}>
+                            {(userType === 'moderator_user' || userType === 'admin_user') && (
+                                <button className={indexStyles.moderatorButton} onClick={handleSubmissionList}>
+                                    Submission List
+                                </button>
+                            )}
+                            {(userType === 'analyst_user' || userType === 'admin_user') && (
+                                <button className={indexStyles.analystButton} onClick={handleApprovalList}>
+                                    Approval List
+                                </button>
+                            )}
+                            <button className={indexStyles.submitButton} onClick={handleSubmit}>
+                                Submit Article
+                            </button>
+                        </div>
+                    </div>
+        
+                    <div className={indexStyles.columnSelection}>
+                        {headers.map(header => (
+                            <label key={header.key}>
+                                <input
+                                    type="checkbox"
+                                    checked={visibleColumns.includes(header.key)}
+                                    onChange={() => toggleColumn(header.key)}
+                                />
+                                {header.label}
+                            </label>
+                        ))}
+                    </div>
+        
+                    <SortableTable 
+                        headers={headers.filter(header => visibleColumns.includes(header.key))} 
+                        data={filteredArticles.map(article => ({
+                            ...article,
+                            submittedDate: new Date(article.submittedDate).toLocaleDateString(),
+                            rating: (
+                                <Rating 
+                                    articleId={article._id}
+                                    currentRating={article.rating || 0}
+                                    ratingCounter={article.ratingCounter || 0} 
+                                    averageRating={article.averageRating || 0} 
+                                    onRatingChange={handleRatingChange} 
+                                />
+                            ),
+                            actions: (
+                                <>
+                                    <button onClick={() => {
+                                        setEditableArticle(article);
+                                        toggleEditMode(); // Activate edit mode
+                                    }} className={indexStyles.editButton}>
+                                        Edit
+                                    </button>
+                                    <button onClick={() => handleDelete(article._id)} className={indexStyles.deleteButton}>
+                                        Delete
+                                    </button>
+                                </>
+                            )
+                        }))} 
+                    />
+        
+                    {/* Button to toggle side panel */}
+                    <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>
+                        {isSidePanelOpen ? '' : ''}
+                    </button>
                 </div>
-
-                <SortableTable 
-                    headers={headers.filter(header => visibleColumns.includes(header.key))} 
-                    data={filteredArticles.map(article => ({
-                        ...article,
-                        submittedDate: new Date(article.submittedDate).toLocaleDateString(),
-                        rating: (
-                            
-                            <Rating 
-                                articleId={article._id}
-                                currentRating={article.rating || 0}
-                                ratingCounter={article.ratingCounter || 0} 
-                                averageRating={article.averageRating || 0} 
-                                onRatingChange={handleRatingChange} 
-                            />
-                        ),
-                    }))} 
-                />
             </div>
-             {/* Button to toggle side panel */}
-             <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>
-                {isSidePanelOpen ? '' : ''}
-            </button>
-        </div>
-    );
-};
+        );
+    }        
 
 export default Index;

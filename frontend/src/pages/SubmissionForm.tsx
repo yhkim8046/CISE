@@ -83,7 +83,8 @@ const SubmissionForm: React.FC = () => {
 
     return (
         <div className={styles.formContainer}>
-            {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} />}
+            {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} onToggleEditMode={function (): void {
+            } } />}
             <button onClick={toggleSidePanel} className={sidePanelStyles.togglePanelButton}></button>
             
             <h1 className={styles.formTitle}>Submit an Article</h1>

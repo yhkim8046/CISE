@@ -114,7 +114,8 @@ const SubmissionList: React.FC = () => {
     
     return (
         <div className={styles.container}>
-            {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} />}
+            {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} onToggleEditMode={function (): void {
+            } } />}
             <button onClick={toggleSidePanel} className={sidePanelStyles.togglePanelButton}></button>
             <h1>Articles Submission Queue</h1>
             <SortableTable

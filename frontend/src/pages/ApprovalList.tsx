@@ -115,7 +115,8 @@ const ApprovalList: React.FC = () => {
 
     return (
         <div className={styles.container}>
-            {isSidePanelOpen && <SidePanel onClose={() => setIsSidePanelOpen(false)} />}
+            {isSidePanelOpen && <SidePanel onClose={() => setIsSidePanelOpen(false)} onToggleEditMode={function (): void {
+            } } />}
             <button className={sidePanelStyles.togglePanelButton} onClick={() => setIsSidePanelOpen(!isSidePanelOpen)}></button>
             <h1>Approval Queue</h1>
             <div className={styles.contentWrapper}>
