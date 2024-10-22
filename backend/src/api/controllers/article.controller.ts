@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { ArticleService } from '../services/articleService';
 import { CreateArticleDto } from '../dto/createArticle.dto';
-import { UpdateStatusDto } from '../dto/updateStatus.dto';
+import { updateStatusDto } from '../dto/updateStatus.dto';
 import { SubmitToAnalystDto } from '../dto/submitToAnalystDto';
 import { Article } from '../models/article.schema';
 import { RatingArticleDto } from '../dto/ratingArticle.dto';
@@ -72,7 +72,7 @@ export class ArticleController {
   @Put('/:_id')
   async updateArticle(
     @Param('_id') _id: string,
-    @Body() updateStatusDto: UpdateStatusDto,
+    @Body() updateStatusDto: updateStatusDto,
   ): Promise<{ message: string }> {
     const updatedArticle = await this.articleService.update(
       _id,
@@ -99,7 +99,7 @@ export class ArticleController {
   async approvingArticle(
     @Param('_id') _id: string,
     @Query('moderatorId') moderatorId: string,
-    @Body() updateStatusDto: UpdateStatusDto,
+    @Body() updateStatusDto: updateStatusDto,
   ): Promise<{ message: string }> {
     const updatedArticle = await this.articleService.approvingArticle(
       _id,
@@ -196,7 +196,7 @@ export class ArticleController {
   // Batch update articles
   @Patch('/batch-update')
   async batchUpdateStatus(
-    @Body() updates: UpdateStatusDto[],
+    @Body() updates: updateStatusDto[],
   ): Promise<{ message: string }> {
     console.log('Batch update requested with:', updates); // Debug log
     await this.articleService.batchUpdateStatus(updates); // Ensure service handles the update logic
