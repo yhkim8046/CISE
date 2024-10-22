@@ -17,6 +17,18 @@
     height: 40px;
 }
 
+// Style specific to the index page
+.pageContainer .indexNavBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #a4c8ee; /* Navbar color */
+    color: white;
+    height: 40px;
+    width: 100%;
+}
+
 .navLeft {
     display: flex;
     align-items: center;
@@ -166,7 +178,7 @@
     background-repeat: no-repeat; /* Prevent repeating the image */
     background-size: 40px; /* Corrected size of the image */
     margin-left: 10px;
-    top: 50%;
+    top: 880px;
     height: 50px;
     position: relative; /* Position relative for the tooltip */
 }
@@ -203,4 +215,13 @@
 
 .settingsButton:hover .tooltip {
     display: block; /* Show on hover */
+}
+
+.navRight {
+    display: flex;
+    align-items: center; // Align items vertically
+}
+
+.editModeStatus {
+    margin-right: 20px; // Space between edit mode status and user select
 }

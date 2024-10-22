@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ArticleModule } from './api/module/article.module';
-import { ModeratorModule } from './api/module/Moderator.module';
+import { ArticleModule } from './api/module/Article.Module';
+import { ModeratorModule } from './api/module/Moderator.Module';
 
 @Module({
   imports: [

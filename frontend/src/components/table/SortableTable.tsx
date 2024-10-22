@@ -8,6 +8,7 @@ interface SortableTableProps {
     showActions?: boolean;
     onApprove?: (id: string) => void;
     onReject?: (id: string) => void;
+    children?: React.ReactNode; // Allow passing children
 }
 
 const SortableTable: React.FC<SortableTableProps> = ({
@@ -17,9 +18,11 @@ const SortableTable: React.FC<SortableTableProps> = ({
     showActions = false,
     onApprove,
     onReject,
+    children,
 }) => {
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>(null);
 
+    // Filtering based on the search term
     const filteredData = useMemo(() => {
         return searchTerm
             ? data.filter(article =>
@@ -31,12 +34,13 @@ const SortableTable: React.FC<SortableTableProps> = ({
             : data;
     }, [data, headers, searchTerm]);
 
+    // Sorting the filtered data
     const sortedData = useMemo(() => {
-        let sortableItems = [...filteredData];
-        if (sortConfig !== null) {
+        const sortableItems = [...filteredData];
+        if (sortConfig) {
             sortableItems.sort((a, b) => {
-                const aValue = a[sortConfig.key];
-                const bValue = b[sortConfig.key];
+                const aValue = sortConfig.key === 'submissionDate' ? new Date(a[sortConfig.key]) : a[sortConfig.key];
+                const bValue = sortConfig.key === 'submissionDate' ? new Date(b[sortConfig.key]) : b[sortConfig.key];
 
                 if (aValue < bValue) {
                     return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -50,10 +54,11 @@ const SortableTable: React.FC<SortableTableProps> = ({
         return sortableItems;
     }, [filteredData, sortConfig]);
 
+    // Handle sorting request
     const requestSort = (key: string) => {
         let direction: 'ascending' | 'descending' = 'ascending';
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
+        if (sortConfig && sortConfig.key === key) {
+            direction = sortConfig.direction === 'ascending' ? 'descending' : 'ascending';
         }
         setSortConfig({ key, direction });
     };
@@ -63,7 +68,7 @@ const SortableTable: React.FC<SortableTableProps> = ({
             <thead>
                 <tr>
                     {headers.map(header => (
-                        <th key={header.key} onClick={() => requestSort(header.key)}>
+                        <th key={header.key} onClick={() => requestSort(header.key)} style={{ cursor: 'pointer' }}>
                             {header.label} {sortConfig?.key === header.key ? (sortConfig.direction === 'ascending' ? '↑' : '↓') : ''}
                         </th>
                     ))}
@@ -71,34 +76,39 @@ const SortableTable: React.FC<SortableTableProps> = ({
                 </tr>
             </thead>
             <tbody>
-                {sortedData.map((article, index) => (
-                    <tr key={article._id || index}>
-                        {headers.map(header => (
-                            <td key={`${article._id}-${header.key}`}>
-                                {header.key === 'status' ? (
-                                    <div className={styles.statusContainer}>
-                                        <span>{article[header.key]}</span>
-                                    </div>
-                                ) : (
-                                    article[header.key]
-                                )}
-                            </td>
-                        ))}
-                        {showActions && (
-                            <td>
-                                {onApprove && (
-                                    <button onClick={() => onApprove(article._id)} className={styles.approveButton}>
-                                        Approve
-                                    </button>
-                                )}
-                                {onReject && (
-                                    <button onClick={() => onReject(article._id)} className={styles.rejectButton}>
-                                        Reject
-                                    </button>
-                                )}
-                            </td>
-                        )}
+                {sortedData.length > 0 ? (
+                    sortedData.map((article, index) => (
+                        <tr key={article._id || index}>
+                            {headers.map(header => (
+                                <td key={`${article._id}-${header.key}`}>
+                                    {header.key === 'status' ? (
+                                        <div className={styles.statusContainer}>
+                                            <span>{article[header.key]}</span>
+                                        </div>
+                                    ) : header.key === 'rating' ? (
+                                        <div className={styles.ratingContainer}>
+                                            <span>{article[header.key]}</span>
+                                        </div>
+                                    ) : (
+                                        article[header.key]
+                                    )}
+                                </td>
+                            ))}
+                            {showActions && (
+                                <td>
+                                    <button onClick={() => onApprove?.(article._id)}>Approve</button>
+                                    <button onClick={() => onReject?.(article._id)}>Reject</button>
+                                </td>
+                            )}
+                        </tr>
+                    ))
+                ) : (
+                    <tr>
+                        <td colSpan={headers.length + (showActions ? 1 : 0)}>No data available</td>
                     </tr>
+                )}
+                {React.Children.map(children, (child, index) => (
+                    <tr key={index}>{child}</tr> // Wrap each child in a <tr> to prevent whitespace issues
                 ))}
             </tbody>
         </table>
