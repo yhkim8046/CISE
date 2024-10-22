@@ -1,6 +1,6 @@
 // moderator.service.ts
 import { Injectable } from '@nestjs/common';
-import { Moderator, ModeratorDocument } from '../models/Moderator.schema';
+import { Moderator, ModeratorDocument } from '../models/Moderator.Schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 

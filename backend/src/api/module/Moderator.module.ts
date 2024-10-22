@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ModeratorController } from '../controllers/Moderator.Controller';
 import { ModeratorService } from '../services/ModeratorService';
-import { Moderator, ModeratorSchema } from '../models/Moderator.schema';
+import { Moderator, ModeratorSchema } from '../models/Moderator.Schema';
 
 @Module({
   imports: [
