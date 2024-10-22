@@ -9,7 +9,6 @@ import sidePanelStyles from '../styles/sidepanel.module.scss';
 import searchIcon from '../images/search.png';
 import { useUserType } from '../context/userType';
 import NavBar from '@/components/nav/NavBar';
-import MyApp from './_app';
 
 interface ArticlesInterface {
     _id: string; 
@@ -44,7 +43,7 @@ const Index: React.FC = () => {
 
     const router = useRouter();
 
-    const headers: { key: keyof ArticlesInterface; label: string }[] = [
+    const headers: { key: keyof ArticlesInterface | 'actions'; label: string }[] = [
         { key: 'title', label: 'Title' },
         { key: 'author', label: 'Authors' },
         { key: 'yearOfPublication', label: 'Publication Year' },
@@ -56,7 +55,9 @@ const Index: React.FC = () => {
         { key: 'evidence', label: 'Evidence' },
         { key: 'submittedDate', label: 'Submission Date' },
         { key: 'rating', label: 'Rating' },
+        { key: 'actions', label: 'Actions' }, // Add this line for actions
     ];
+    
 
     const toggleEditMode = () => {
         setIsEditMode((prev) => !prev);
@@ -248,8 +249,16 @@ async function updateArticle(article: ArticlesInterface) {
     if (error) return <div className={indexStyles.error}>Error: {error}</div>;
 
     return (
-            <div className={indexStyles.pageContainer}>
-                 {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} onToggleEditMode={toggleEditMode} />}
+        <><NavBar
+            isEditMode={isEditMode}
+            toggleEditMode={toggleEditMode}
+            className={indexStyles.indexNavBar} // Pass indexNavBar class
+        /><div className={indexStyles.pageContainer}>
+                {isSidePanelOpen && (
+                    <SidePanel
+                        onClose={toggleSidePanel}
+                        onToggleEditMode={toggleEditMode} />
+                )}
 
                 <div className={`${indexStyles.mainContent} ${isSidePanelOpen ? indexStyles.openSidePanel : ''}`}>
                     <div className={indexStyles.headerContainer}>
@@ -260,8 +269,7 @@ async function updateArticle(article: ArticlesInterface) {
                                 placeholder="Search articles..."
                                 className={indexStyles.searchInput}
                                 value={searchTerm}
-                                onChange={handleSearchChange}
-                            />
+                                onChange={handleSearchChange} />
                             <button className={indexStyles.searchButton} onClick={saveSearchQuery}>
                                 <Image src={searchIcon} alt="Search" width={16} height={16} />
                             </button>
@@ -291,38 +299,32 @@ async function updateArticle(article: ArticlesInterface) {
                                         type="text"
                                         value={editableArticle.title}
                                         onChange={(e) => setEditableArticle({ ...editableArticle, title: e.target.value })}
-                                        placeholder="Edit Title"
-                                    />
+                                        placeholder="Edit Title" />
                                     <input
                                         type="text"
                                         value={editableArticle.author}
                                         onChange={(e) => setEditableArticle({ ...editableArticle, author: e.target.value })}
-                                        placeholder="Edit Author"
-                                    />
+                                        placeholder="Edit Author" />
                                     <input
                                         type="number"
                                         value={editableArticle.yearOfPublication || ''}
                                         onChange={(e) => setEditableArticle({ ...editableArticle, yearOfPublication: parseInt(e.target.value) || null })}
-                                        placeholder="Edit Year of Publication"
-                                    />
+                                        placeholder="Edit Year of Publication" />
                                     <input
                                         type="text"
                                         value={editableArticle.doi}
                                         onChange={(e) => setEditableArticle({ ...editableArticle, doi: e.target.value })}
-                                        placeholder="Edit DOI"
-                                    />
+                                        placeholder="Edit DOI" />
                                     <input
                                         type="text"
                                         value={editableArticle.claim}
                                         onChange={(e) => setEditableArticle({ ...editableArticle, claim: e.target.value })}
-                                        placeholder="Edit Claim"
-                                    />
+                                        placeholder="Edit Claim" />
                                     <input
                                         type="text"
                                         value={editableArticle.evidence}
                                         onChange={(e) => setEditableArticle({ ...editableArticle, evidence: e.target.value })}
-                                        placeholder="Edit Evidence"
-                                    />
+                                        placeholder="Edit Evidence" />
                                     <button onClick={saveEditedArticle}>Save</button>
                                     <button onClick={() => setEditableArticle(null)}>Cancel</button>
                                 </div>
@@ -344,45 +346,46 @@ async function updateArticle(article: ArticlesInterface) {
                             </button>
                         </div>
                     </div>
-        
+
                     <div className={indexStyles.columnSelection}>
-                        {headers.map(header => (
-                            <label key={header.key}>
-                                <input
-                                    type="checkbox"
-                                    checked={visibleColumns.includes(header.key)}
-                                    onChange={() => toggleColumn(header.key)}
-                                />
-                                {header.label}
-                            </label>
-                        ))}
-                    </div>
-        
-                    <SortableTable 
-    headers={headers.filter(header => visibleColumns.includes(header.key))} 
+    {headers.map(header => (
+        (header.key === 'actions' && userType !== 'admin_user') ? null : ( // Hide actions checkbox for non-admin users
+            <label key={header.key}>
+                <input
+                    type="checkbox"
+                    checked={visibleColumns.includes(header.key)}
+                    onChange={() => toggleColumn(header.key)} />
+                {header.label}
+            </label>
+        )
+    ))}
+</div>
+
+
+                    <SortableTable
+    headers={headers.filter(header => visibleColumns.includes(header.key))}
     data={filteredArticles.map(article => ({
         ...article,
         submittedDate: new Date(article.submittedDate).toLocaleDateString(),
         rating: (
-            <Rating 
+            <Rating
                 articleId={article._id}
                 currentRating={article.rating || 0}
-                ratingCounter={article.ratingCounter || 0} 
-                averageRating={article.averageRating || 0} 
-                onRatingChange={handleRatingChange} 
-            />
+                ratingCounter={article.ratingCounter || 0}
+                averageRating={article.averageRating || 0}
+                onRatingChange={handleRatingChange} />
         ),
         actions: (
             <>
-                {isEditMode && ( // Conditional rendering based on edit mode
+                {userType === 'admin_user' && isEditMode && ( // Check user type and edit mode
                     <>
-                        <button 
-                            onClick={() => handleEdit(article)} 
+                        <button
+                            onClick={() => handleEdit(article)}
                             className={indexStyles.editButton}>
                             Edit
                         </button>
-                        <button 
-                            onClick={() => handleDelete(article._id)} 
+                        <button
+                            onClick={() => handleDelete(article._id)}
                             className={indexStyles.deleteButton}>
                             Delete
                         </button>
@@ -390,16 +393,17 @@ async function updateArticle(article: ArticlesInterface) {
                 )}
             </>
         )
-    }))} 
+    }))}
 />
 
-        
+
+
                     {/* Button to toggle side panel */}
                     <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>
                         {isSidePanelOpen ? '' : ''}
                     </button>
                 </div>
-            </div>
+            </div></>
         );
     }        
 

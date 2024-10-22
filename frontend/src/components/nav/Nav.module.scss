@@ -17,6 +17,18 @@
     height: 40px;
 }
 
+// Style specific to the index page
+.pageContainer .indexNavBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #a4c8ee; /* Navbar color */
+    color: white;
+    height: 40px;
+    width: 100%;
+}
+
 .navLeft {
     display: flex;
     align-items: center;

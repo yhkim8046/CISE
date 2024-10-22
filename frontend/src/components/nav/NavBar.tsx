@@ -9,9 +9,10 @@ import { useUserType } from '../../context/userType'; // Import your context
 interface NavBarProps {
     isEditMode: boolean; // Prop for edit mode status
     toggleEditMode: () => void; // Prop for toggling edit mode
+    className?: string; // Optional className prop
 }
 
-const NavBar: React.FC<NavBarProps> = ({ isEditMode, toggleEditMode }) => { // Include toggleEditMode here
+const NavBar: React.FC<NavBarProps> = ({ isEditMode, toggleEditMode, className }) => {
     const { userType, setUserType } = useUserType(); // Use the user type from context
 
     const options = [
@@ -26,7 +27,7 @@ const NavBar: React.FC<NavBarProps> = ({ isEditMode, toggleEditMode }) => { // I
     };
 
     return (
-        <nav className={styles.navbar}>
+        <nav className={`${styles.navbar} ${className}`}> {/* Apply the className prop */}
             <div className={styles.navLeft}>
                 <button className={styles.dropdownButton} aria-label="Menu" />
                 <h1>SPEED Article Database</h1>
@@ -39,7 +40,7 @@ const NavBar: React.FC<NavBarProps> = ({ isEditMode, toggleEditMode }) => { // I
                         <div className={styles.editModeStatus}>
                             Edit Mode: {isEditMode ? 'On' : 'Off'}
                         </div>
-                        <button onClick={toggleEditMode}>
+                        <button onClick={toggleEditMode} aria-label="Toggle Edit Mode">
                             Toggle Edit Mode
                         </button>
                     </div>
