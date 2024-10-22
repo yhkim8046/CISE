@@ -29,7 +29,7 @@ const SubmissionList: React.FC = () => {
 
     const fetchArticles = async () => {
         try {
-            const response = await fetch('http://localhost:8082/api/articles'); // Updated port here
+            const response = await fetch('https://cise-backend-nine.vercel.app/articles'); // Updated port here
             if (!response.ok) {
                 throw new Error('Failed to fetch articles');
             }
@@ -89,7 +89,7 @@ const SubmissionList: React.FC = () => {
         }
     
         try {
-            const response = await fetch('http://localhost:8082/api/articles/batch-update', {
+            const response = await fetch('https://cise-backend-nine.vercel.app/api/articles/batch-update', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
