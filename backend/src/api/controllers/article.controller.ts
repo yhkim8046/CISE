@@ -18,7 +18,7 @@ import { ArticleService } from '../services/ArticleService';
 import { CreateArticleDto } from '../dto/CreateArticle.Dto';
 import { UpdateStatusDto } from '../dto/UpdateStatus.Dto';
 import { SubmitToAnalystDto } from '../dto/SubmitToAnalystDto';
-import { Article } from '../models/Article.schema';
+import { Article } from '../models/Article.Schema';
 import { RatingArticleDto } from '../dto/RatingArticle.Dto';
 
 @Controller('api/articles')
