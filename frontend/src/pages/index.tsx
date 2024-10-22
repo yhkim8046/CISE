@@ -171,55 +171,56 @@ const Index: React.FC = () => {
         <div className={indexStyles.pageContainer}>
             {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} />}
             <div className={`${indexStyles.mainContent} ${isSidePanelOpen ? indexStyles.openSidePanel : ''}`}>
-                <div className={indexStyles.headerContainer}>
-                    <h1>Articles</h1>
-                    <div className={indexStyles.searchBarContainer}>
-                        <input
-                            type="text"
-                            placeholder="Search articles..."
-                            className={indexStyles.searchInput}
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                        />
-                        <button className={indexStyles.searchButton} onClick={saveSearchQuery}>
-                            <Image src={searchIcon} alt="Search" width={16} height={16} />
-                        </button>
-                        {/* Saved Queries Dropdown */}
-                        <div className={indexStyles.savedQueriesDropdown}>
-                            <button className={indexStyles.dropdownButton} onClick={toggleDropdown}>
-                                Saved Queries
-                            </button>
-                            {dropdownOpen && (
-                                <ul className={indexStyles.dropdownList}>
-                                    {savedQueries.length > 0 ? (
-                                        savedQueries.map((query, index) => (
-                                            <li key={index} onClick={() => setSearchTerm(query)} style={{ cursor: 'pointer' }}>
-                                                {query}
-                                            </li>
-                                        ))
-                                    ) : (
-                                        <li>No saved queries</li>
-                                    )}
-                                </ul>
-                            )}
-                        </div>
-                    </div>
-                    <div className={indexStyles.buttonContainer}>
-                        {(userType === 'moderator_user' || userType === 'admin_user') && (
-                            <button className={indexStyles.moderatorButton} onClick={handleSubmissionList}>
-                                Submission List
-                            </button>
-                        )}
-                        {(userType === 'analyst_user' || userType === 'admin_user') && (
-                            <button className={indexStyles.analystButton} onClick={handleApprovalList}>
-                                Approval List
-                            </button>
-                        )}
-                        <button className={indexStyles.submitButton} onClick={handleSubmit}>
-                            Submit Article
-                        </button>
-                    </div>
-                </div>
+            <div className={indexStyles.headerContainer}>
+    <h1>Articles</h1>
+    <div className={indexStyles.searchBarContainer}>
+        <input
+            type="text"
+            placeholder="Search articles..."
+            className={indexStyles.searchInput}
+            value={searchTerm}
+            onChange={handleSearchChange}
+        />
+        <button className={indexStyles.searchButton} onClick={saveSearchQuery}>
+            <Image src={searchIcon} alt="Search" width={16} height={16} />
+        </button>
+        {/* Saved Queries Dropdown */}
+        <div className={indexStyles.savedQueriesDropdown}>
+            <button className={indexStyles.dropdownButton} onClick={toggleDropdown}>
+                Saved Queries
+            </button>
+            {dropdownOpen && (
+                <ul className={indexStyles.dropdownList}>
+                    {savedQueries.length > 0 ? (
+                        savedQueries.map((query, index) => (
+                            <li key={index} onClick={() => setSearchTerm(query)} style={{ cursor: 'pointer' }}>
+                                {query}
+                            </li>
+                        ))
+                    ) : (
+                        <li>No saved queries</li>
+                    )}
+                </ul>
+            )}
+        </div>
+    </div>
+    <div className={indexStyles.buttonContainer}>
+        {(userType === 'moderator_user' || userType === 'admin_user') && (
+            <button className={indexStyles.moderatorButton} onClick={handleSubmissionList}>
+                Submission List
+            </button>
+        )}
+        {(userType === 'analyst_user' || userType === 'admin_user') && (
+            <button className={indexStyles.analystButton} onClick={handleApprovalList}>
+                Approval List
+            </button>
+        )}
+        <button className={indexStyles.submitButton} onClick={handleSubmit}>
+            Submit Article
+        </button>
+    </div>
+</div>
+
 
                 <div className={indexStyles.columnSelection}>
                     {headers.map(header => (
@@ -252,6 +253,10 @@ const Index: React.FC = () => {
                     }))} 
                 />
             </div>
+             {/* Button to toggle side panel */}
+             <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>
+                {isSidePanelOpen ? '' : ''}
+            </button>
         </div>
     );
 };

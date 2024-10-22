@@ -115,7 +115,7 @@ const ApprovalList: React.FC = () => {
 
     return (
         <div className={styles.container}>
-            {isSidePanelOpen && <SidePanel onClose={() => setIsSidePanelOpen(false)} />} // Render side panel if open
+            {isSidePanelOpen && <SidePanel onClose={() => setIsSidePanelOpen(false)} />}
             <button className={sidePanelStyles.togglePanelButton} onClick={() => setIsSidePanelOpen(!isSidePanelOpen)}></button>
             <h1>Approval Queue</h1>
             <div className={styles.contentWrapper}>
