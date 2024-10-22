@@ -8,6 +8,8 @@ import indexStyles from '../styles/index.module.scss';
 import sidePanelStyles from '../styles/sidepanel.module.scss';
 import searchIcon from '../images/search.png';
 import { useUserType } from '../context/userType';
+import NavBar from '@/components/nav/NavBar';
+import MyApp from './_app';
 
 interface ArticlesInterface {
     _id: string; 
@@ -58,7 +60,7 @@ const Index: React.FC = () => {
 
     const toggleEditMode = () => {
         setIsEditMode((prev) => !prev);
-      };
+    };
 
     // Fetch articles from the API on component mount
     useEffect(() => {
@@ -247,7 +249,7 @@ async function updateArticle(article: ArticlesInterface) {
 
     return (
             <div className={indexStyles.pageContainer}>
-                {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} onToggleEditMode={toggleEditMode} />}
+                 {isSidePanelOpen && <SidePanel onClose={toggleSidePanel} onToggleEditMode={toggleEditMode} />}
 
                 <div className={`${indexStyles.mainContent} ${isSidePanelOpen ? indexStyles.openSidePanel : ''}`}>
                     <div className={indexStyles.headerContainer}>
@@ -357,34 +359,40 @@ async function updateArticle(article: ArticlesInterface) {
                     </div>
         
                     <SortableTable 
-                        headers={headers.filter(header => visibleColumns.includes(header.key))} 
-                        data={filteredArticles.map(article => ({
-                            ...article,
-                            submittedDate: new Date(article.submittedDate).toLocaleDateString(),
-                            rating: (
-                                <Rating 
-                                    articleId={article._id}
-                                    currentRating={article.rating || 0}
-                                    ratingCounter={article.ratingCounter || 0} 
-                                    averageRating={article.averageRating || 0} 
-                                    onRatingChange={handleRatingChange} 
-                                />
-                            ),
-                            actions: (
-                                <>
-                                    <button onClick={() => {
-                                        setEditableArticle(article);
-                                        toggleEditMode(); // Activate edit mode
-                                    }} className={indexStyles.editButton}>
-                                        Edit
-                                    </button>
-                                    <button onClick={() => handleDelete(article._id)} className={indexStyles.deleteButton}>
-                                        Delete
-                                    </button>
-                                </>
-                            )
-                        }))} 
-                    />
+    headers={headers.filter(header => visibleColumns.includes(header.key))} 
+    data={filteredArticles.map(article => ({
+        ...article,
+        submittedDate: new Date(article.submittedDate).toLocaleDateString(),
+        rating: (
+            <Rating 
+                articleId={article._id}
+                currentRating={article.rating || 0}
+                ratingCounter={article.ratingCounter || 0} 
+                averageRating={article.averageRating || 0} 
+                onRatingChange={handleRatingChange} 
+            />
+        ),
+        actions: (
+            <>
+                {isEditMode && ( // Conditional rendering based on edit mode
+                    <>
+                        <button 
+                            onClick={() => handleEdit(article)} 
+                            className={indexStyles.editButton}>
+                            Edit
+                        </button>
+                        <button 
+                            onClick={() => handleDelete(article._id)} 
+                            className={indexStyles.deleteButton}>
+                            Delete
+                        </button>
+                    </>
+                )}
+            </>
+        )
+    }))} 
+/>
+
         
                     {/* Button to toggle side panel */}
                     <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>

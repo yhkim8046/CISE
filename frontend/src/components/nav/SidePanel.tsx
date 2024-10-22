@@ -8,7 +8,7 @@ interface SidePanelProps {
     onClose: () => void; // Existing close prop
 }
 
-const SidePanel: React.FC<SidePanelProps> = ({ onToggleEditMode, onClose }) => {
+const SidePanel: React.FC<SidePanelProps> = ({}) => {
     const router = useRouter();
     const { userType } = useUserType();
 
@@ -26,11 +26,6 @@ const SidePanel: React.FC<SidePanelProps> = ({ onToggleEditMode, onClose }) => {
 
     const handleApprovalList = () => {
         router.push('/ApprovalList'); 
-    };
-
-    // Use the function passed from the parent to toggle edit mode
-    const handleToggleEditMode = () => {
-        onToggleEditMode(); // Call the function to toggle edit mode
     };
 
     return (
@@ -52,12 +47,6 @@ const SidePanel: React.FC<SidePanelProps> = ({ onToggleEditMode, onClose }) => {
             {(userType === 'analyst_user' || userType === 'admin_user') && (
                 <button className={styles.approvalListButton} onClick={handleApprovalList}>
                     <span className={styles.tooltip}>Article Approval List</span>
-                </button>
-            )}
-            {/* Button to toggle edit mode */}
-            {userType === 'admin_user' && (
-                <button className={styles.settingsButton} onClick={handleToggleEditMode}> 
-                    <span className={styles.tooltip}>Toggle Edit Mode</span>
                 </button>
             )}
         </div>

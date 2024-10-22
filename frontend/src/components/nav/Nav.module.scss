@@ -204,3 +204,12 @@
 .settingsButton:hover .tooltip {
     display: block; /* Show on hover */
 }
+
+.navRight {
+    display: flex;
+    align-items: center; // Align items vertically
+}
+
+.editModeStatus {
+    margin-right: 20px; // Space between edit mode status and user select
+}
