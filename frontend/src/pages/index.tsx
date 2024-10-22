@@ -28,13 +28,13 @@ interface ArticlesInterface {
 }
 
 const Index: React.FC = () => {
-    const { userType } = useUserType();
-    const [isSidePanelOpen, setSidePanelOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [articles, setArticles] = useState<ArticlesInterface[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence', 'rating', 'ratingCounter', 'averageRating', 'submittedDate']);
+    const { userType } = useUserType(); // Get the current user type from context
+    const [isSidePanelOpen, setSidePanelOpen] = useState(false); // State to manage side panel visibility
+    const [searchTerm, setSearchTerm] = useState(''); // State for the search input
+    const [articles, setArticles] = useState<ArticlesInterface[]>([]); // State for storing articles
+    const [loading, setLoading] = useState(true); // State to track loading status
+    const [error, setError] = useState<string | null>(null); // State for error handling
+    const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence', 'rating', 'ratingCounter', 'averageRating', 'submittedDate']); // State for visible columns in the table
     const [savedQueries, setSavedQueries] = useState<string[]>([]); // State for saved queries
     const [dropdownOpen, setDropdownOpen] = useState(false); // State for dropdown visibility
 
@@ -54,42 +54,48 @@ const Index: React.FC = () => {
         { key: 'rating', label: 'Rating' },
     ];
 
+    // Fetch articles from the API on component mount
     useEffect(() => {
         const fetchArticles = async () => {
-            setLoading(true);
+            setLoading(true); // Set loading to true before fetching
             try {
                 const response = await fetch('http://localhost:8082/api/articles/');
                 if (!response.ok) {
-                    throw new Error('Failed to fetch articles');
+                    throw new Error('Failed to fetch articles'); // Handle fetch error
                 }
                 const data: ArticlesInterface[] = await response.json();
-                setArticles(data);
+                setArticles(data); // Set fetched articles to state
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'An error occurred');
+                setError(err instanceof Error ? err.message : 'An error occurred'); // Set error message
             } finally {
-                setLoading(false);
+                setLoading(false); // Set loading to false after fetch
             }
         };
 
         fetchArticles();
     }, []);
 
+    // Navigate to the submission form
     const handleSubmit = () => {
         router.push('/SubmissionForm');
     };
 
+    // Navigate to the submission list
     const handleSubmissionList = () => {
         router.push('/SubmissionList');
     };
 
+    // Navigate to the approval list
     const handleApprovalList = () => {
         router.push('/ApprovalList');
     };
 
+    // Toggle the visibility of the side panel
     const toggleSidePanel = () => {
         setSidePanelOpen(!isSidePanelOpen);
     };
 
+    // Handle search input changes
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
     };
@@ -101,6 +107,7 @@ const Index: React.FC = () => {
         }
     };
 
+    // Filter articles based on the search term
     const filteredArticles = articles.filter(article =>
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (article.author && article.author.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -111,12 +118,14 @@ const Index: React.FC = () => {
         (article.evidence && article.evidence.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
+    // Toggle the visibility of a column in the table
     const toggleColumn = (column: string) => {
         setVisibleColumns(prev => 
             prev.includes(column) ? prev.filter(c => c !== column) : [...prev, column]
         );
     };
 
+    // Handle rating change for an article
     const handleRatingChange = async (articleId: string, newRating: number) => {
         try {
             const updatedArticle = await updateArticleRating(articleId, newRating);
@@ -128,10 +137,11 @@ const Index: React.FC = () => {
                 )
             );
         } catch (error) {
-            console.error("Error updating rating:", error);
+            console.error("Error updating rating:", error); // Log error if updating rating fails
         }
     };
 
+    // Update article rating on the server
     async function updateArticleRating(articleId: string, newRating: number) {
         const response = await fetch(`http://localhost:8082/api/articles/${articleId}/rate`, {
             method: 'PATCH',
@@ -142,17 +152,19 @@ const Index: React.FC = () => {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to update article rating');
+            throw new Error('Failed to update article rating'); // Handle update error
         }
-        return await response.json();
+        return await response.json(); // Return updated article data
     }
 
-    // Toggle dropdown visibility
+    // Toggle dropdown visibility for saved queries
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
     };
 
+    // Loading state
     if (loading) return <div className={indexStyles.loading}>Loading articles...</div>;
+    // Error state
     if (error) return <div className={indexStyles.error}>Error: {error}</div>;
 
     return (
