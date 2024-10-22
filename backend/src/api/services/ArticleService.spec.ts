@@ -4,7 +4,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Article } from '../models/article.schema';
 import { Moderator } from '../models/moderator.schema';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { CreateArticleDto } from '../dto/createArticle.dto';
 import { RatingArticleDto } from '../dto/ratingArticle.dto';
 
@@ -52,6 +52,22 @@ describe('ArticleService', () => {
 
       expect(await service.findAll()).toEqual(articles);
     });
+
+    it('should throw an error if find fails', async () => {
+      jest.spyOn(articleModel, 'find').mockReturnValue({
+        exec: jest.fn().mockRejectedValueOnce(new Error('Database error')),
+      } as any);
+
+      await expect(service.findAll()).rejects.toThrow('Database error');
+    });
+
+    it('should throw BadRequestException if invalid query is provided', async () => {
+      jest.spyOn(articleModel, 'find').mockReturnValue({
+        exec: jest.fn().mockRejectedValueOnce(new BadRequestException('Invalid query')),
+      } as any);
+
+      await expect(service.findAll()).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('findOne', () => {
@@ -62,6 +78,18 @@ describe('ArticleService', () => {
       } as any);
 
       expect(await service.findOne('someId')).toEqual(article);
+    });
+
+    it('should throw NotFoundException if article is not found', async () => {
+      jest.spyOn(articleModel, 'findById').mockReturnValue({
+        exec: jest.fn().mockResolvedValueOnce(null),
+      } as any);
+
+      await expect(service.findOne('invalidId')).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException if invalid ID format is provided', async () => {
+      await expect(service.findOne('')).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -75,6 +103,28 @@ describe('ArticleService', () => {
         .mockResolvedValueOnce(createArticleDto as any);
 
       expect(await service.create(createArticleDto)).toEqual(createArticleDto);
+    });
+
+    it('should throw an error if creation fails', async () => {
+      const createArticleDto: CreateArticleDto = {
+        title: 'New Article',
+      } as CreateArticleDto;
+
+      jest
+        .spyOn(articleModel, 'create')
+        .mockRejectedValueOnce(new Error('Creation failed'));
+
+      await expect(service.create(createArticleDto)).rejects.toThrow(
+        'Creation failed',
+      );
+    });
+
+    it('should throw BadRequestException if required fields are missing', async () => {
+      const createArticleDto: CreateArticleDto = {
+        title: '', // Title is missing
+      } as CreateArticleDto;
+
+      await expect(service.create(createArticleDto)).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -121,6 +171,19 @@ describe('ArticleService', () => {
         }),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it('should throw BadRequestException if approval status is invalid', async () => {
+      const moderator = { typeOfUser: 'moderator' } as Moderator;
+      jest.spyOn(moderatorModel, 'findById').mockReturnValue({
+        exec: jest.fn().mockResolvedValueOnce(moderator),
+      } as any);
+
+      await expect(
+        service.approvingArticle('articleId', 'moderatorId', {
+          status: 'invalidStatus',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('ratingArticle', () => {
@@ -162,6 +225,50 @@ describe('ArticleService', () => {
       await expect(
         service.ratingArticle('invalidId', ratingDto),
       ).rejects.toThrow('Article not found');
+    });
+
+    it('should throw BadRequestException if rating exceeds maximum allowed value', async () => {
+      const article = {
+        totalRating: 3,
+        ratingCounter: 1,
+        save: jest.fn().mockResolvedValue(true),
+      } as any;
+      const invalidRatingDto: RatingArticleDto = {
+        rating: 7, // Invalid rating, exceeds max value of 5
+        ratingCounter: 0,
+        totalRating: 0,
+        averageRating: 0,
+      };
+
+      jest.spyOn(articleModel, 'findById').mockReturnValue({
+        exec: jest.fn().mockResolvedValueOnce(article),
+      } as any);
+
+      await expect(
+        service.ratingArticle('articleId', invalidRatingDto),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw an error if saving the updated article fails', async () => {
+      const article = {
+        totalRating: 3,
+        ratingCounter: 1,
+        save: jest.fn().mockRejectedValueOnce(new Error('Save failed')),
+      } as any;
+      const ratingDto: RatingArticleDto = {
+        rating: 4,
+        ratingCounter: 0,
+        totalRating: 0,
+        averageRating: 0,
+      };
+
+      jest.spyOn(articleModel, 'findById').mockReturnValue({
+        exec: jest.fn().mockResolvedValueOnce(article),
+      } as any);
+
+      await expect(
+        service.ratingArticle('articleId', ratingDto),
+      ).rejects.toThrow('Save failed');
     });
   });
 });
