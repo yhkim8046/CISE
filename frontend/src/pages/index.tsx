@@ -69,7 +69,7 @@ const Index: React.FC = () => {
         const fetchArticles = async () => {
             setLoading(true); // Set loading to true before fetching
             try {
-                const response = await fetch('https://cise-backend-nine.vercel.app/articles/');
+                const response = await fetch('http://localhost:8082/api/articles/');
                 if (!response.ok) {
                     throw new Error('Failed to fetch articles'); // Handle fetch error
                 }
@@ -122,7 +122,7 @@ const saveEditedArticle = async (event: React.MouseEvent<HTMLButtonElement>): Pr
     if (!editableArticle) return;
 
     try {
-        const response = await fetch(`https://cise-backend-nine.vercel.app/api/articles/${editableArticle._id}`, {
+        const response = await fetch(`http://localhost:8082/api/articles/${editableArticle._id}`, {
             method: 'PUT', // Assuming you are updating the article
             headers: {
                 'Content-Type': 'application/json',
@@ -197,7 +197,7 @@ const handleDelete = async (articleId: string) => {
 
 // Delete article from the server
 async function deleteArticle(articleId: string) {
-    const response = await fetch(`https://cise-backend-nine.vercel.app/api/articles/${articleId}`, {
+    const response = await fetch(`http://localhost:8082/api/articles/${articleId}`, {
         method: 'DELETE',
     });
 
@@ -212,7 +212,7 @@ const handleEdit = (article: ArticlesInterface) => {
 };
 // Update article on the server
 async function updateArticle(article: ArticlesInterface) {
-    const response = await fetch(`https://cise-backend-nine.vercel.app/api/articles/${article._id}`, {
+    const response = await fetch(`http://localhost:8082/api/articles/${article._id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -228,7 +228,7 @@ async function updateArticle(article: ArticlesInterface) {
 
     // Update article rating on the server
     async function updateArticleRating(articleId: string, newRating: number) {
-        const response = await fetch(`https://cise-backend-nine.vercel.app//api/articles/${articleId}/rate`, {
+        const response = await fetch(`http://localhost:8082/api/articles/${articleId}/rate`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
