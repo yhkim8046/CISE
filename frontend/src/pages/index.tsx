@@ -26,6 +26,7 @@ interface ArticlesInterface {
     averageRating: number; 
     ratingCounter: number; 
     submittedDate: string; 
+    status: string;
 }
 
 const Index: React.FC = () => {
@@ -147,13 +148,16 @@ const saveEditedArticle = async (event: React.MouseEvent<HTMLButtonElement>): Pr
 
     // Filter articles based on the search term
     const filteredArticles = articles.filter(article =>
-        article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (article.author && article.author.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        article.typeOfResearch.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        article.typeOfParticipant.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (article.submittedDate && article.submittedDate.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (article.yearOfPublication !== null && article.yearOfPublication.toString().includes(searchTerm)) ||
-        (article.evidence && article.evidence.toLowerCase().includes(searchTerm.toLowerCase()))
+        article.status === 'Submitted' && // Filter for articles with 'Submitted' status
+        (
+            article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (article.author && article.author.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            article.typeOfResearch.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            article.typeOfParticipant.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (article.submittedDate && article.submittedDate.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (article.yearOfPublication !== null && article.yearOfPublication.toString().includes(searchTerm)) ||
+            (article.evidence && article.evidence.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
     );
 
     // Toggle the visibility of a column in the table
