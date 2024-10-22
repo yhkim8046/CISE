@@ -1,6 +1,6 @@
 import { IsString, IsIn } from 'class-validator';
 
-export class updateStatusDto {
+export class UpdateStatusDto {
   @IsString()
   _id: string; // Ensure we are using _id to match MongoDB
 
