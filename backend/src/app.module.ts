@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ArticleModule } from './api/module/article.module';
-import { ModeratorModule } from './api/module/Moderator.module';
+import { ModeratorModule } from './api/module/moderator.module';
 
 @Module({
   imports: [
