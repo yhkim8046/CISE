@@ -131,7 +131,7 @@ describe('ArticleService', () => {
   describe('approvingArticle', () => {
     it('should approve an article if moderator exists and has correct role', async () => {
       const moderator = { typeOfUser: 'moderator' } as Moderator;
-      const updatedArticle = { status: 'approved' } as Article;
+      const updatedArticle = { status: 'approved' } as unknown as Article;
       jest.spyOn(moderatorModel, 'findById').mockReturnValue({
         exec: jest.fn().mockResolvedValueOnce(moderator),
       } as any);
@@ -142,7 +142,10 @@ describe('ArticleService', () => {
       const result = await service.approvingArticle(
         'articleId',
         'moderatorId',
-        { status: 'approved' },
+        {
+          status: 'approved',
+          _id: ''
+        },
       );
       expect(result).toEqual(updatedArticle);
     });
@@ -155,6 +158,7 @@ describe('ArticleService', () => {
       await expect(
         service.approvingArticle('articleId', 'moderatorId', {
           status: 'approved',
+          _id: ''
         }),
       ).rejects.toThrow(NotFoundException);
     });
@@ -168,6 +172,7 @@ describe('ArticleService', () => {
       await expect(
         service.approvingArticle('articleId', 'moderatorId', {
           status: 'approved',
+          _id: ''
         }),
       ).rejects.toThrow(ForbiddenException);
     });
@@ -181,6 +186,7 @@ describe('ArticleService', () => {
       await expect(
         service.approvingArticle('articleId', 'moderatorId', {
           status: 'invalidStatus',
+          _id: ''
         }),
       ).rejects.toThrow(BadRequestException);
     });
@@ -205,8 +211,8 @@ describe('ArticleService', () => {
       } as any);
 
       const result = await service.ratingArticle('articleId', ratingDto);
-      expect(result.article.totalRating).toEqual(7);
-      expect(result.article.ratingCounter).toEqual(2);
+      expect(result.totalRating).toEqual(7);
+      expect(result.ratingCounter).toEqual(2);
       expect(result.averageRating).toEqual(3.5);
     });
 
