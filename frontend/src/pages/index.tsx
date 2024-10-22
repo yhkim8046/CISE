@@ -13,7 +13,7 @@ interface ArticlesInterface {
     _id: string; 
     title: string;
     author: string;
-    yearOfPublication: number;
+    yearOfPublication: number | null; // Allow null for yearOfPublication
     doi: string;
     pages: number;
     claim: string;
@@ -34,8 +34,8 @@ const Index: React.FC = () => {
     const [articles, setArticles] = useState<ArticlesInterface[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence', 'rating', 'ratingCounter', 'averageRating']);
-    
+    const [visibleColumns, setVisibleColumns] = useState<string[]>(['title', 'author', 'yearOfPublication', 'claim', 'evidence', 'rating', 'ratingCounter', 'averageRating', 'submittedDate']);
+
     const router = useRouter();
 
     const headers: { key: keyof ArticlesInterface; label: string }[] = [
@@ -51,25 +51,23 @@ const Index: React.FC = () => {
         { key: 'submittedDate', label: 'Submission Date' },
         { key: 'rating', label: 'Rating' },
     ];
-    
 
     useEffect(() => {
-        // Ensure submissionDate is fetched in your API call
-const fetchArticles = async () => {
-    setLoading(true);
-    try {
-        const response = await fetch('http://localhost:8082/api/articles/');
-        if (!response.ok) {
-            throw new Error('Failed to fetch articles');
-        }
-        const data: ArticlesInterface[] = await response.json();
-        setArticles(data);
-    } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-        setLoading(false);
-    }
-};
+        const fetchArticles = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch('http://localhost:8082/api/articles/');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch articles');
+                }
+                const data: ArticlesInterface[] = await response.json();
+                setArticles(data);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'An error occurred');
+            } finally {
+                setLoading(false);
+            }
+        };
 
         fetchArticles();
     }, []);
@@ -96,7 +94,12 @@ const fetchArticles = async () => {
 
     const filteredArticles = articles.filter(article =>
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (article.author && article.author.toLowerCase().includes(searchTerm.toLowerCase())) // Check if author is defined
+        (article.author && article.author.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        article.typeOfResearch.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        article.typeOfParticipant.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (article.submittedDate && article.submittedDate.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (article.yearOfPublication !== null && article.yearOfPublication.toString().includes(searchTerm)) || // Added null check
+        (article.evidence && article.evidence.toLowerCase().includes(searchTerm.toLowerCase())) // Check for evidence
     );
 
     const toggleColumn = (column: string) => {
@@ -108,7 +111,6 @@ const fetchArticles = async () => {
     const handleRatingChange = async (articleId: string, newRating: number) => {
         try {
             const updatedArticle = await updateArticleRating(articleId, newRating);
-            // Update the local state with the new rating data
             setArticles(prevArticles =>
                 prevArticles.map(article =>
                     article._id === articleId
@@ -123,17 +125,17 @@ const fetchArticles = async () => {
 
     async function updateArticleRating(articleId: string, newRating: number) {
         const response = await fetch(`http://localhost:8082/api/articles/${articleId}/rate`, {
-            method: 'PATCH', // Change from PUT to PATCH
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ rating: newRating }), // Send only the rating for now
+            body: JSON.stringify({ rating: newRating }),
         });
-    
+
         if (!response.ok) {
             throw new Error('Failed to update article rating');
         }
-        return await response.json(); // Assuming the server returns the updated article
+        return await response.json();
     }
 
     if (loading) return <div className={indexStyles.loading}>Loading articles...</div>;
@@ -188,24 +190,23 @@ const fetchArticles = async () => {
                 </div>
 
                 <SortableTable 
-    headers={headers.filter(header => visibleColumns.includes(header.key))} 
-    data={filteredArticles.map(article => ({
-        ...article,
-        rating: (
-            <Rating 
-                articleId={article._id}
-                currentRating={article.rating || 0}
-                ratingCounter={article.ratingCounter || 0} // Pass ratingCounter
-                averageRating={article.averageRating || 0} // Pass average rating
-                onRatingChange={handleRatingChange} 
-            />
-        ),
-        submittedDate: new Date(article.submittedDate).toLocaleDateString() // Format the date
-    }))} 
-    searchTerm={searchTerm} 
-    showActions={false} 
-/>
-
+                    headers={headers.filter(header => visibleColumns.includes(header.key))} 
+                    data={filteredArticles.map(article => ({
+                        ...article,
+                        rating: (
+                            <Rating 
+                                articleId={article._id}
+                                currentRating={article.rating || 0}
+                                ratingCounter={article.ratingCounter || 0} 
+                                averageRating={article.averageRating || 0} 
+                                onRatingChange={handleRatingChange} 
+                            />
+                        ),
+                        submittedDate: article.submittedDate.split('T')[0] // Display only date part
+                    }))} 
+                    searchTerm={searchTerm} 
+                    showActions={false} 
+                />
             </div>
 
             <button className={sidePanelStyles.togglePanelButton} onClick={toggleSidePanel}>
