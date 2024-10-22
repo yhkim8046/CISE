@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ArticleService } from './articleService';
+import { ArticleService } from './ArticleService';
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Article } from '../models/article.schema';
-import { Moderator } from '../models/moderator.schema';
+import { Article } from '../models/Article.schema';
+import { Moderator } from '../models/Moderator.schema';
 import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { CreateArticleDto } from '../dto/createArticle.dto';
-import { RatingArticleDto } from '../dto/ratingArticle.dto';
+import { CreateArticleDto } from '../dto/CreateArticle.dto';
+import { RatingArticleDto } from '../dto/RatingArticle.dto';
 
 describe('ArticleService', () => {
   let service: ArticleService;

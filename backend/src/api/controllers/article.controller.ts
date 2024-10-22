@@ -14,12 +14,12 @@ import {
   InternalServerErrorException,
   BadRequestException,
 } from '@nestjs/common';
-import { ArticleService } from '../services/articleService';
-import { CreateArticleDto } from '../dto/createArticle.dto';
-import { UpdateStatusDto } from '../dto/updateStatus.dto';
-import { SubmitToAnalystDto } from '../dto/submitToAnalystDto';
-import { Article } from '../models/article.schema';
-import { RatingArticleDto } from '../dto/ratingArticle.dto';
+import { ArticleService } from '../services/ArticleService';
+import { CreateArticleDto } from '../dto/CreateArticle.dto';
+import { UpdateStatusDto } from '../dto/UpdateStatus.dto';
+import { SubmitToAnalystDto } from '../dto/SubmitToAnalystDto';
+import { Article } from '../models/Article.schema';
+import { RatingArticleDto } from '../dto/RatingArticle.dto';
 
 @Controller('api/articles')
 export class ArticleController {

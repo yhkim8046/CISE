@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Article, ArticleDocument } from '../models/article.schema';
-import { RatingArticleDto } from '../dto/ratingArticle.dto';
-import { CreateArticleDto } from '../dto/createArticle.dto';
-import { UpdateStatusDto } from '../dto/updateStatus.dto';
-import { Moderator } from '../models/moderator.schema';
+import { Article, ArticleDocument } from '../models/Article.schema';
+import { RatingArticleDto } from '../dto/RatingArticle.dto';
+import { CreateArticleDto } from '../dto/CreateArticle.dto';
+import { UpdateStatusDto } from '../dto/UpdateStatus.dto';
+import { Moderator } from '../models/Moderator.schema';
 
 @Injectable()
 export class ArticleService {
