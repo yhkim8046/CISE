@@ -5,8 +5,8 @@ import { Model } from 'mongoose';
 import { Article } from '../models/Article.schema';
 import { Moderator } from '../models/Moderator.schema';
 import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { CreateArticleDto } from '../dto/CreateArticle.dto';
-import { RatingArticleDto } from '../dto/RatingArticle.dto';
+import { CreateArticleDto } from '../dto/CreateArticle.Dto';
+import { RatingArticleDto } from '../dto/RatingArticle.Dto';
 
 describe('ArticleService', () => {
   let service: ArticleService;

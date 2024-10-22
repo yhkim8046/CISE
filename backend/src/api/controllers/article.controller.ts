@@ -15,11 +15,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { ArticleService } from '../services/ArticleService';
-import { CreateArticleDto } from '../dto/CreateArticle.dto';
-import { UpdateStatusDto } from '../dto/UpdateStatus.dto';
+import { CreateArticleDto } from '../dto/CreateArticle.Dto';
+import { UpdateStatusDto } from '../dto/UpdateStatus.Dto';
 import { SubmitToAnalystDto } from '../dto/SubmitToAnalystDto';
 import { Article } from '../models/Article.schema';
-import { RatingArticleDto } from '../dto/RatingArticle.dto';
+import { RatingArticleDto } from '../dto/RatingArticle.Dto';
 
 @Controller('api/articles')
 export class ArticleController {
