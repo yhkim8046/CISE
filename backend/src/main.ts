@@ -21,11 +21,12 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors({
-    origin: ['https://cise-front.vercel.app'], // allowing frontend
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
-    credentials: true, 
-  });
+  app.use(cors({
+    origin: '*', // Allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD', 'CONNECT', 'TRACE'], // List of allowed methods
+    credentials: true,
+}));
+
 
   const port = process.env.PORT || 3000; 
   await app.listen(port);
@@ -33,3 +34,11 @@ async function bootstrap() {
 }
 
 bootstrap();
+function cors(arg0: {
+  origin: string; // Allow all origins
+  methods: string[]; // List of allowed methods
+  credentials: boolean;
+}): any {
+  throw new Error('Function not implemented.');
+}
+
