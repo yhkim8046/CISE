@@ -12,6 +12,7 @@ async function bootstrap() {
   logger.log(`DB_URI: ${dbUri}`);
 
   try {
+    //DB connection  
     await mongoose.connect(dbUri, { serverSelectionTimeoutMS: 5000 });
     logger.log('Database connected successfully');
   } catch (err) {
@@ -20,9 +21,15 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors(); // This enables CORS for all origins
+  app.enableCors({
+    origin: ['https://cise-front.vercel.app'], // allowing frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    credentials: true, 
+  });
 
-  await app.listen(process.env.PORT); // Let Vercel manage the port
-};
+  const port = process.env.PORT || 3000; 
+  await app.listen(port);
+  logger.log(`Application is running on: ${await app.getUrl()}`);
+}
 
 bootstrap();
