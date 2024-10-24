@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ConsoleLogger } from '@nestjs/common';
 import * as mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
+import * as cors from 'cors';  // Import cors
 
 dotenv.config();
 
@@ -21,12 +22,12 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  app.use(cors({
+  // Enable CORS properly without manually defining the function
+  app.enableCors({
     origin: '*', // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD', 'CONNECT', 'TRACE'], // List of allowed methods
     credentials: true,
-}));
-
+  });
 
   const port = process.env.PORT || 3000; 
   await app.listen(port);
@@ -34,11 +35,3 @@ async function bootstrap() {
 }
 
 bootstrap();
-function cors(arg0: {
-  origin: string; // Allow all origins
-  methods: string[]; // List of allowed methods
-  credentials: boolean;
-}): any {
-  throw new Error('Function not implemented.');
-}
-
