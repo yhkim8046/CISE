@@ -53,7 +53,7 @@ const SubmissionForm: React.FC = () => {
         };
     
         try {
-            const response = await fetch('https://cise-backend-nine.vercel.app/api/articles', {
+            const response = await fetch('/api/articles', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
