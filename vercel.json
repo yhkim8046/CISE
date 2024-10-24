@@ -9,6 +9,9 @@
     ],"routes": [{
     "src": "/(.*)",
     "dest": "dist/main.js"
-    }]
+    }],
+    "env": {
+    "NEXT_PUBLIC_BACKEND_URL": "https://cise-speed-backend-indol.vercel.app"
+  }
 }
     
