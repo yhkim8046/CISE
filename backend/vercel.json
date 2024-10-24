@@ -1,18 +1,17 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "dist/main.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/index.ts": {
+      "runtime": "nodejs18.x"
     }
-  ],
+  },
   "routes": [
     {
-      "src": "/api/(.*)", 
-      "dest": "dist/main.js"
+      "src": "/(.*)",
+      "dest": "/api/index.ts"
     }
   ],
   "env": {
-    "DB_URI": "@db-uri" 
+    "DB_URI": "@db-uri"
   }
 }
